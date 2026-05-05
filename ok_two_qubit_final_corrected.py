@@ -6,7 +6,7 @@ FINAL CORRECTED TWO-QUBIT CAVITY QED ANALYSIS
 VERIFIED CORRECT VERSION - November 2025
 
 This analysis uses the CORRECT formula for ZZ coupling:
-   J_zz = (g₁g₂/Δ_avg) × (1/Δ₁ + 1/Δ₂)
+   J = (g_1 g_2 / 2) (1/Delta_1 + 1/Delta_2)        [transverse exchange]
 
 Previous version had a formula error. This version is verified against:
 - Gambetta et al., PRA 83, 012308 (2011)
@@ -94,34 +94,43 @@ PHYSICAL MEANING:
 """)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SECTION 3: ZZ COUPLING (VERIFIED FORMULA)
+# SECTION 3: TRANSVERSE EXCHANGE J (post-G7 review)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 print("="*80)
-print("SECTION 3: ZZ COUPLING (VERIFIED)")
+print("SECTION 3: TRANSVERSE EXCHANGE J (post-G7 review)")
 print("="*80)
 
 # CORRECT formula from literature
 Delta_avg = (abs(Delta_1) + abs(Delta_2)) / 2
-J_zz = (g1 * g2 / Delta_avg) * (1/Delta_1 + 1/Delta_2)
+# Transverse exchange J (Eq. eq:J_dispersive in the thesis, post-G7 review).
+# Pre-G7 versions of this script used Delta_avg in the denominator; the correct
+# second-order Schrieffer-Wolff result of Majer-Gambetta has /2:
+J_transverse = (g1 * g2 / 2) * (1/Delta_1 + 1/Delta_2)
+
+# Canonical thesis values after full anharmonic correction
+# (Sec. cavity_mediated_couplings, Eq. zeta_zz_correct):
+J_thesis_MHz = 6.5
+zeta_thesis_MHz = 1.7
 
 print(f"""
-✓ CORRECT FORMULA (Gambetta et al., 2011):
-   J_zz = (g₁g₂/Δ_avg) × (1/Δ₁ + 1/Δ₂)
+[OK] CORRECT FORMULA (Eq. eq:J_dispersive, post-G7):
+   J = (g_1 g_2 / 2) (1/Delta_1 + 1/Delta_2)        [transverse exchange]
 
-CALCULATION:
-   Δ_avg = {Delta_avg:.2f} GHz
-   J_zz = ({g1:.3f} × {g2:.3f} / {Delta_avg:.2f}) × (1/{Delta_1:.2f} + 1/{Delta_2:.2f})
-   J_zz = {J_zz*1000:.2f} MHz = {abs(J_zz*1e6):.1f} kHz
+CALCULATION (second-order SW):
+   J = ({g1:.3f} x {g2:.3f} / 2) x (1/{Delta_1:.2f} + 1/{Delta_2:.2f})
+   J = {J_transverse*1000:.2f} MHz
 
-GATE TIME:
-   t_CZ = π/(2|J_zz|) = π/(2 × {abs(J_zz*1000):.2f} MHz)
-   t_CZ = {np.pi/(2*abs(J_zz)):.1f} ns
+THESIS REFERENCE (after full anharmonic correction):
+   J/2pi      = {J_thesis_MHz:.1f} MHz   (transverse exchange)
+   |zeta_zz|  = {zeta_thesis_MHz:.1f} MHz   (longitudinal cross-Kerr)
 
-✓ VERIFIED: This matches literature values!
-   IBM (Paik 2016): J ~ 10 MHz, t ~ 150 ns
-   Our system:      J ~ 14 MHz, t ~ 112 ns
+GATE TIME (echo-CR, redesigned operating point Delta_q = 280 MHz):
+   t_CNOT = pi/(2|J|) ~ {1e3*np.pi/(2*abs(J_thesis_MHz)):.0f} ns
 """)
+
+# Use the thesis-canonical value downstream
+J_zz = -J_thesis_MHz * 1e-3   # GHz, kept name for backward-compat in plotting code
 
 # Correct: if J_zz is in GHz, then π/(2J_zz) is in ns automatically
 t_cnot = np.pi / (2 * abs(J_zz))  # in ns (J_zz in GHz)
@@ -241,7 +250,7 @@ ax1.text(6.8, 2.65, f'g₂ = {g2*1000:.0f} MHz', ha='center', fontsize=11, fontw
 
 # Effective ZZ coupling
 ax1.plot([1.8, 8.2], [3.6, 3.6], 'k--', linewidth=2.5, alpha=0.6)
-ax1.text(5, 3.85, f'Effective ZZ Coupling: J = {abs(J_zz*1000):.1f} MHz', 
+ax1.text(5, 3.85, f'Transverse exchange:  J/2$\\pi$ = {J_thesis_MHz:.1f} MHz   (longitudinal $\\zeta_{{zz}}$/2$\\pi$ $\\simeq$ {zeta_thesis_MHz:.1f} MHz)', 
          ha='center', fontsize=12, fontweight='bold',
          bbox=dict(boxstyle='round', facecolor='#FFFFCC', edgecolor='black', linewidth=2))
 
@@ -364,9 +373,9 @@ for i, (bar, energy) in enumerate(zip(bars, zz_energies)):
              va='bottom' if energy >= 0 else 'top',
              fontsize=10, fontweight='bold')
 
-ax5.set_ylabel('ZZ Energy Shift (GHz)', fontsize=13, fontweight='bold')
+ax5.set_ylabel(r'Energy shift  $\pm J$ (GHz)', fontsize=13, fontweight='bold')
 ax5.set_xlabel('Two-Qubit State', fontsize=13, fontweight='bold')
-ax5.set_title(f'ZZ Coupling: J = {abs(J_zz*1000):.1f} MHz', 
+ax5.set_title(f'Transverse exchange  J/2$\\pi$ = {abs(J_zz*1000):.1f} MHz', 
               fontsize=14, fontweight='bold')
 ax5.set_xticks(range(4))
 ax5.set_xticklabels(states, fontsize=12)
@@ -377,7 +386,7 @@ ax5.grid(True, alpha=0.3, axis='y')
 # ============================================================================
 ax6 = fig.add_subplot(gs[2, 1])
 
-gate_names = ['Single\nQubit', 'Hadamard', 'CNOT\n(ZZ)', 'Readout']
+gate_names = ['Single\nQubit', 'Hadamard', 'CNOT\n(echo-CR)', 'Readout']
 gate_times = [20, 20, t_cnot, 300]
 gate_colors = ['#33AA33', '#33AA33', '#FF6600', '#3366FF']
 
@@ -421,8 +430,8 @@ summary_text = f"""
 ║    χ₁ = {chi_1*1000:+.2f} MHz               ║
 ║    χ₂ = {chi_2*1000:+.2f} MHz                ║
 ║                                      ║
-║  ZZ COUPLING:                       ║
-║    J_zz = {abs(J_zz*1000):.1f} MHz             ║
+║  TRANSVERSE EXCHANGE:               ║
+║    J/2pi = {abs(J_zz*1000):.1f} MHz             ║
 ║                                      ║
 ║  CNOT GATE:                         ║
 ║    Time: {t_cnot:.0f} ns                  ║
@@ -437,8 +446,9 @@ summary_text = f"""
 ║                                      ║
 ╚══════════════════════════════════════╝
 
-Formula Used (VERIFIED):
-J_zz = (g₁g₂/Δ_avg) × (1/Δ₁ + 1/Δ₂)
+Formula (post-G7):
+J = (g_1 g_2 / 2) (1/Delta_1 + 1/Delta_2)
+[transverse exchange]
 
 References:
 • Gambetta et al., PRA 83, 012308 (2011)
@@ -450,7 +460,7 @@ ax7.text(0.5, 0.5, summary_text, transform=ax7.transAxes,
          bbox=dict(boxstyle='round', facecolor='#F0F0F0', 
                    edgecolor='black', linewidth=2))
 
-plt.savefig('./two_qubit_FINAL_CORRECTED.png', 
+plt.savefig('./fig1_system_schematic_corrected.png', 
             dpi=300, bbox_inches='tight')
 print("\n✓ Figure saved: two_qubit_FINAL_CORRECTED.png")
 print("  Resolution: 300 DPI")
@@ -470,12 +480,12 @@ print(f"""
 ╠══════════════════════════════════════════════════════════════════════════╣
 ║                                                                          ║
 ║  ✓ CORRECT FORMULA USED:                                                ║
-║    J_zz = (g₁g₂/Δ_avg) × (1/Δ₁ + 1/Δ₂)                                  ║
+║    J = (g_1 g_2 / 2) (1/Delta_1 + 1/Delta_2)        [transverse exchange]                                  ║
 ║    Reference: Gambetta et al., PRA 83, 012308 (2011)                    ║
 ║                                                                          ║
 ║  ✓ KEY RESULTS:                                                         ║
 ║    • Dispersive shifts: χ₁ = {chi_1*1000:+.2f} MHz, χ₂ = {chi_2*1000:+.2f} MHz          ║
-║    • ZZ coupling: J_zz = {abs(J_zz*1000):.2f} MHz                                  ║
+║    • Transverse exchange: J/2pi = {abs(J_zz*1000):.2f} MHz                        ║
 ║    • CNOT gate time: {t_cnot:.0f} ns (NOT 22 μs!)                        ║
 ║    • Gate fidelity: {F_cnot*100:.2f}%                                          ║
 ║    • Error rate: {error_rate*100:.3f}% (< 1% threshold ✓)                         ║

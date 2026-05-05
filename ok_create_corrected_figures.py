@@ -135,8 +135,8 @@ for i, (d, J_c) in enumerate(zip(diameters_corrected, J_c_values)):
 # Panel D: Dispersive parameters
 ax4 = fig1.add_subplot(gs1[1, 1])
 
-params_names = ['|χ₁|', '|χ₂|', 'J_zz', 'Δ₁/g', 'Δ₂/g']
-params_values = [5.36, 1.70, 9.38, 40, 80]  # CORRECTED chi values
+params_names = ['|χ₁|', '|χ₂|', 'J', 'Δ₁/g', 'Δ₂/g']
+params_values = [5.36, 1.70, 9.38, 40, 80]  # CORRECTED chi values (300 GHz / 4K design point); J = transverse exchange (post-G7)
 colors_params = ['#42A5F5', '#29B6F6', '#26C6DA', '#66BB6A', '#9CCC65']
 
 bars = ax4.bar(range(len(params_names)), params_values, color=colors_params,
@@ -317,14 +317,14 @@ temps_fid = np.array([2, 3, 4, 5, 6, 8, 10])
 T2_corrected = 13.2e-6
 t_CNOT = 167.6e-9
 alpha_hz = 15e9
-J_zz = 9.38e6
+J_transverse = 9.38e6   # transverse exchange J (post-G7), 300 GHz design point
 
 fidelities_temp = []
 for T_scan in temps_fid:
     n_th_scan = thermal_occupation(300e9, T_scan)
     eps_decoh = t_CNOT / (T2_corrected / 2)
     eps_thermal = n_th_scan * 0.5
-    eps_leakage = (J_zz / abs(alpha_hz))**2
+    eps_leakage = (J_transverse / abs(alpha_hz))**2
     eps_control = 0.001
     F_scan = (1 - (eps_decoh + eps_thermal + eps_leakage + eps_control)) * 100
     fidelities_temp.append(F_scan)

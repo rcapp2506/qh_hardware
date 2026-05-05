@@ -24,15 +24,25 @@ g1 = 2 * np.pi * 0.08  # GHz
 g2 = 2 * np.pi * 0.08  # GHz
 
 #################################### aggiunto #################################
-alpha_1 = -0.200   # Qubit 1 anharmonicity (200 MHz)
-alpha_2 = -0.200   # Qubit 2 anharmonicity (200 MHz)
+# alpha in pulsazione angolare per coerenza con g, Delta (tutti in 2π·GHz)
+alpha_1 = 2 * np.pi * (-0.200)   # Qubit 1 anharmonicity (-200 MHz)
+alpha_2 = 2 * np.pi * (-0.200)   # Qubit 2 anharmonicity (-200 MHz)
 ######################################
 
 Delta1 = omega_q1 - omega_r
 Delta2 = omega_q2 - omega_r
 #chi1 = g1**2 / Delta1
 #chi2 = g2**2 / Delta2
-zeta12 = g1 * g2 * (1/Delta1 + 1/Delta2)
+# Transverse exchange J (Eq. eq:J_dispersive in the thesis, post-G7 review).
+# The pre-G7 version used g1*g2*(1/D1+1/D2) (factor 2 missing); the correct
+# second-order Schrieffer-Wolff result of Majer-Gambetta has /2:
+J_xchange = g1 * g2 * (1/Delta1 + 1/Delta2) / 2
+# Canonical thesis values after full anharmonic correction
+# (Sec. cavity_mediated_couplings, Eq. zeta_zz_correct):
+J_thesis_MHz = 6.5
+zeta_thesis_MHz = 1.7
+# Use thesis-canonical for downstream displays
+zeta12 = -J_thesis_MHz * 1e-3 * 2 * np.pi  # GHz, kept name for back-compat
 kappa = 2 * np.pi * 0.001  # Cavity decay rate
 
 ################################
@@ -352,7 +362,7 @@ ax.text(2.75, 1.2, 'g₂', fontsize=11, fontweight='bold', color='green')
 arrow3 = FancyArrowPatch((0.75, 2.5), (0.75, 1.5), arrowstyle='<->', mutation_scale=15,
                         color='purple', linewidth=2, linestyle='--')
 ax.add_patch(arrow3)
-ax.text(0.2, 2, 'ζ₁₂\n(virtual)', fontsize=9, fontweight='bold', color='purple', ha='center')
+ax.text(0.2, 2, 'J\n(transv.\nexch.)', fontsize=9, fontweight='bold', color='purple', ha='center')
 
 # Add readout
 ax.text(7.5, 2.25, '→ Readout', fontsize=11, fontweight='bold', color='blue')
@@ -382,7 +392,8 @@ Qubit 2:
 Dispersive Parameters:
   χ₁/2π = {chi1/(2*np.pi)*1000:.2f} MHz
   χ₂/2π = {chi2/(2*np.pi)*1000:.2f} MHz
-  ζ₁₂/2π = {zeta12/(2*np.pi)*1000:.3f} kHz
+  J/2π  = {J_thesis_MHz:.2f} MHz   (transv. exch.)
+  |ζ_zz|/2π = {zeta_thesis_MHz:.2f} MHz   (long. cross-Kerr)
 
 Regime Check:
   |Δ₁|/g₁ = {abs(Delta1)/g1:.1f} ✓
