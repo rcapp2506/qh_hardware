@@ -152,25 +152,56 @@ ax.set_ylabel(r'$\omega_q$ (GHz)')
 ax.set_title('Achievable $F_{CR}$ at 4 K\n($\\Delta_q$ optimized at each point)', fontsize=11)
 plt.colorbar(im, ax=ax, label=r'$F_{CR}$ (%)')
 
-# Mark the operating point
-ax.scatter([50], [300], s=180, c='#1F4E8C', marker='*', zorder=5,
-           edgecolor='white', linewidth=1.0,
-           label=r'Operating point ($T_1 = 50$ $\mu$s, 300 GHz)')
-ax.legend(loc='upper left', fontsize=9, framealpha=0.9)
+# Mark the operating point (T_1 = 50 us, omega_q = 300 GHz).
+# Use a high-contrast black edge so the marker is visible on the
+# green region of the heatmap.
+ax.scatter([50], [300], s=320, c='#1F4E8C', marker='*', zorder=10,
+           edgecolor='black', linewidth=1.8,
+           label=r'Operating point ($T_1 = 50$ $\mu$s, $\omega_q = 300$ GHz)')
+ax.legend(loc='upper left', fontsize=9, framealpha=0.95)
 
-# Heatmap t_gate
+# ─── Right panel: optimal gate time vs omega_q ───
+# t_gate depends only on omega_q (through the couplings), not on T_1,
+# so a 2D heatmap (omega_q, T_1) is a misleading representation: the
+# variation is one-dimensional. We replace it with the 1D curve
+# t_gate(omega_q), which is what the data actually contain. Each curve
+# point is the optimum gate time at that omega_q (the optimum over
+# Delta_q is essentially T_1-independent in this regime).
 ax = axes[1]
-t_clipped = np.clip(t_gate_map, 0, 2000)
-im = ax.pcolormesh(T1_grid, om_grid, t_clipped, cmap='viridis_r',
-                   vmin=0, vmax=2000, shading='auto')
-cs = ax.contour(T1_grid, om_grid, t_gate_map, levels=[100, 200, 500, 1000],
-                colors='white', linewidths=1.5)
-ax.clabel(cs, inline=True, fmt='%.0f ns', fontsize=9, colors='white')
-ax.set_xscale('log')
-ax.set_xlabel(r'$T_1$ ($\mu$s)')
-ax.set_ylabel(r'$\omega_q$ (GHz)')
-ax.set_title('Optimal $t_{\\rm gate}$ (CR)', fontsize=11)
-plt.colorbar(im, ax=ax, label=r'$t_{\rm gate}$ (ns)')
+
+# Take the t_gate values from any T_1 column (they are all equal by physics);
+# pick a representative one and skip the omega_q rows where the thermal-cutoff
+# filter produced a zero.
+j_ref = np.argmin(np.abs(T1_arr - 50))   # 50 us, the operating-point T_1
+t_gate_1d = t_gate_map[:, j_ref]
+valid = (t_gate_1d > 1.0) & np.isfinite(t_gate_1d)
+om_valid = omega_arr[valid]
+t_valid  = t_gate_1d[valid]
+
+ax.plot(om_valid, t_valid, '-', color='#1F4E8C', linewidth=2.2,
+        label=r'$t_{\rm gate}^{\rm opt}(\omega_q)$')
+
+# Operating point: omega_q = 300 GHz
+i_op = np.argmin(np.abs(omega_arr - 300))
+t_op = t_gate_map[i_op, j_ref]
+ax.scatter([300], [t_op], s=320, c='#1F4E8C', marker='*', zorder=10,
+           edgecolor='black', linewidth=1.8,
+           label=rf'Operating point ($\omega_q = 300$ GHz, $t_{{\rm gate}} = {t_op:.0f}$ ns)')
+
+# Reference horizontal bands: useful gate-time scales
+ax.axhspan(0, 100, color='#D6EBDD', alpha=0.5, zorder=0)
+ax.text(omega_arr[0] + 5, 95, 'fast: $< 100$ ns', fontsize=8.5,
+        color='#3A6B43', va='top')
+
+ax.set_xlabel(r'$\omega_q$ (GHz)')
+ax.set_ylabel(r'Optimal $t_{\rm gate}$ (ns)')
+ax.set_title(r'Optimal CR gate time vs $\omega_q$' + '\n'
+             + r'($\Delta_q$ optimized; $T_1$-independent by construction)',
+             fontsize=11)
+ax.grid(alpha=0.3, linestyle=':')
+ax.legend(loc='lower right', fontsize=9, framealpha=0.95)
+ax.set_xlim(omega_arr[0], omega_arr[-1])
+ax.set_ylim(0, max(t_valid) * 1.15)
 
 plt.suptitle('Cross-resonance sweet-spot search at 4 K ($g = 500$ MHz, $|\\alpha| = 1$ GHz)',
              fontsize=12, y=1.02)
