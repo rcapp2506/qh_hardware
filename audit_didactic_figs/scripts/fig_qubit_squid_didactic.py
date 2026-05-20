@@ -35,7 +35,7 @@ fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.2))
 # ============================================================
 ax = axes[0]
 ax.set_xlim(0, 10)
-ax.set_ylim(-0.5, 7)
+ax.set_ylim(-1.6, 7)
 ax.set_aspect('auto')
 
 # LC oscillator (left half): equally-spaced potential and levels
@@ -53,9 +53,9 @@ for n in range(5):
     ax.text(2.0 + width/2 + 0.1, E_n, f'$|{n}\\rangle$',
             fontsize=9, color='#185FA5', va='center')
 # LC label
-ax.text(2.0, 0.1, 'LC oscillator', ha='center', fontsize=10,
+ax.text(2.0, -0.9, 'LC Oscillator', ha='center', fontsize=10,
         fontweight='bold')
-ax.text(2.0, -0.25, r'$\omega_{n+1,n} = \omega_r$ (equal spacing)',
+ax.text(2.0, -1.3, r'$\omega_{n+1,n} = \omega_r$ (equal spacing)',
         ha='center', fontsize=8.5, style='italic', color='#5F5E5A')
 
 # Transmon (right half): cosine potential, anharmonic levels
@@ -87,8 +87,8 @@ ax.plot([7.5 - 0.5, 7.5 + 0.5], [0.5, 0.5],
         color='#993C1D', linewidth=1.5)
 ax.text(7.5 + 0.6, 0.5, r'$|0\rangle$', fontsize=9, color='#993C1D', va='center')
 
-ax.text(7.5, 0.1, 'transmon', ha='center', fontsize=10, fontweight='bold')
-ax.text(7.5, -0.25, r'$\alpha = \omega_{21}-\omega_{10} \approx -E_C$',
+ax.text(7.5, -0.9, 'Transmon', ha='center', fontsize=10, fontweight='bold')
+ax.text(7.5, -1.3, r'$\alpha = \omega_{21}-\omega_{10} \approx -E_C$',
         ha='center', fontsize=8.5, style='italic', color='#5F5E5A')
 
 # Anharmonicity annotation
