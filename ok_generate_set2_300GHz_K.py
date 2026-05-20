@@ -46,7 +46,7 @@ for f_GHz in frequencies:
 ax1.axhspan(0, 2, color='lightgreen', alpha=0.3, label='Excellent (< 2%)')
 ax1.axhspan(2, 5, color='lightblue', alpha=0.3, label='Good (2-5%)')
 ax1.axhspan(5, 10, color='khaki', alpha=0.3, label='Acceptable (5-10%)')
-ax1.axhspan(10, 35, color='lavender', alpha=0.3, label='300 GHz Range')
+ax1.axhspan(10, 35, color='lavender', alpha=0.3, label='Marginal (>10%)')
 
 # Calculate thermal population at key points
 f_ref = 300e9  # 300 GHz
@@ -71,10 +71,10 @@ ax2 = plt.subplot(1, 2, 2)
 
 configurations = [
     ('Traditional\nAl/AlOₓ\n(20 mK)', 5.8, 0.020),
-    ('300GHz-Q\n@ 4K', 300, 4.0),
-    ('300GHz-Q\n@ 6K', 300, 6.0),
-    ('300GHz-Q\n@ 8K', 300, 8.0),
-    ('300GHz-Q\n@ 10K', 300, 10.0),
+    ('Design\n@ 4 K', 300, 4.0),
+    ('Design\n@ 6 K', 300, 6.0),
+    ('Design\n@ 8 K', 300, 8.0),
+    ('Design\n@ 10 K', 300, 10.0),
 ]
 
 thermal_pops = []
@@ -116,7 +116,7 @@ ax2.text(len(labels)-0.5, 2.5, '2% threshold', color='red', fontsize=10, fontwei
 
 ax2.set_xlabel('Configuration', fontsize=13, fontweight='bold')
 ax2.set_ylabel('Values', fontsize=13, fontweight='bold')
-ax2.set_title('Performance Comparison:\nTraditional vs 300GHz-Q Operation', 
+ax2.set_title('Performance Comparison:\nTraditional vs elevated-T design (K domain)', 
               fontsize=15, fontweight='bold')
 ax2.set_xticks(x_pos)
 ax2.set_xticklabels(labels, fontsize=10)
@@ -158,7 +158,7 @@ ax1.axhline(y=0.05, color='gray', linestyle='--', linewidth=1, alpha=0.5)
 ax1.text(15, 0.06, '5% threshold', fontsize=9, color='gray')
 
 # 300GHz-Q range highlight (300 GHz, 4-10 K)
-ax1.axvspan(4, 10, color='pink', alpha=0.2, label='300GHz-Q range')
+ax1.axvspan(4, 10, color='pink', alpha=0.2, label='Operating range')
 
 ax1.set_xlabel('Temperature (K)', fontsize=12, fontweight='bold')
 ax1.set_ylabel('Thermal Population n(T)', fontsize=12, fontweight='bold')
@@ -191,7 +191,7 @@ for T_K in temps_plot2:
 # Typical transmons region
 ax2.axvspan(4, 8, color='lavender', alpha=0.3, label='Typical transmons')
 # 300GHz-Q sweet spot
-ax2.plot(300, 0.03, '*', color='red', markersize=20, label='300GHz-Q (sweet spot)')
+ax2.plot(300, 0.03, '*', color='red', markersize=20, label='Design (sweet spot)')
 
 ax2.axhline(y=0.05, color='gray', linestyle='--', linewidth=1)
 ax2.axhline(y=0.01, color='gray', linestyle=':', linewidth=1)
@@ -233,7 +233,7 @@ cbar.set_label('Thermal Population n(T)', fontsize=11, fontweight='bold')
 rect = Rectangle((4, 250), 6, 100, linewidth=2, edgecolor='red', 
                  facecolor='none', linestyle='--')
 ax3.add_patch(rect)
-ax3.plot(7, 300, '*', color='red', markersize=20, label='300GHz-Q sweet spot design')
+ax3.plot(7, 300, '*', color='red', markersize=20, label='Design (sweet spot)')
 
 # Add contour lines for specific values
 contour_lines = ax3.contour(T_grid, F_grid, N_grid, levels=[0.01, 0.05], 
@@ -268,7 +268,7 @@ ax4.axhline(y=5, color='orange', linestyle='--', linewidth=2, label='Marginal (r
 ax4.axhline(y=1, color='red', linestyle='--', linewidth=2, label='Poor (ratio = 1)')
 
 # 300GHz-Q range
-ax4.axvspan(4, 10, color='pink', alpha=0.2, label='300GHz-Q range')
+ax4.axvspan(4, 10, color='pink', alpha=0.2, label='Operating range')
 
 ax4.set_xlabel('Temperature (K)', fontsize=12, fontweight='bold')
 ax4.set_ylabel('Ratio ħω₀₁/(k_B T)', fontsize=12, fontweight='bold')
@@ -286,10 +286,10 @@ ax5.axis('off')
 table_data = [
     ['Configuration', 'ω₀₁\n(GHz)', 'T\n(K)', 'n(T)\n(%)', 'ħω/(k_BT)', 'Status'],
     ['Traditional\nAl transmon', '5.8', '0.020', '0.0001', '11998.5', '✓ Excellent'],
-    ['300GHz-Q\nat 4K', '300', '4', '2.81', '3.60', '✓ Good'],
-    ['300GHz-Q\nat 6K', '300', '6', '9.98', '2.40', '△ Marginal'],
-    ['300GHz-Q\nat 8K', '300', '8', '19.81', '1.80', '✗ Poor'],
-    ['300GHz-Q\nat 10K', '300', '10', '31.06', '1.44', '✗ Poor'],
+    ['Design\nat 4 K', '300', '4', '2.81', '3.60', '✓ Good'],
+    ['Design\nat 6 K', '300', '6', '9.98', '2.40', '△ Marginal'],
+    ['Design\nat 8 K', '300', '8', '19.81', '1.80', '✗ Poor'],
+    ['Design\nat 10 K', '300', '10', '31.06', '1.44', '✗ Poor'],
 ]
 
 # Color coding
@@ -311,7 +311,7 @@ for i in range(6):
     table[(0, i)].set_facecolor('#4CAF50')
     table[(0, i)].set_text_props(weight='bold', color='white')
 
-ax5.set_title('300GHz-Q Thermal Performance\nvs Traditional Transmons', 
+ax5.set_title('Design Thermal Performance\nvs Traditional Transmons', 
               fontsize=13, fontweight='bold', pad=20)
 
 # PLOT 6: Minimum Qubit Frequency
@@ -330,8 +330,8 @@ for threshold in thresholds:
     ax6.plot(temps_plot6, f_min, linewidth=2.5, label=f'{threshold*100:.0f}% threshold')
 
 # 300GHz-Q range
-ax6.axhspan(250, 350, color='pink', alpha=0.2, label='300GHz-Q ω₀₁ range')
-ax6.axhline(y=300, color='red', linestyle='--', linewidth=2, label='300GHz-Q ω₀₁ (sweet spot)')
+ax6.axhspan(250, 350, color='pink', alpha=0.2, label='Operating ω₀₁ range')
+ax6.axhline(y=300, color='red', linestyle='--', linewidth=2, label='Sweet-spot ω₀₁')
 
 # Mark operating points
 operating_points = [(4, 300), (6, 300), (8, 300), (10, 300)]

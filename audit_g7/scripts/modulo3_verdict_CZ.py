@@ -38,10 +38,10 @@ systems = [
         'T2_us': 30,
     },
     {
-        'name': 'Innovation 300 GHz @ 4 K',
+        'name': 'Elevated-T design (300 GHz, 4 K)',
         'zeta_zz_MHz': 0.0009,    # 0.9 kHz
-        'T1_us': 5,                # stima ottimistica per sub-THz transmon a 4K
-        'T2_us': 1,                # stima
+        'T1_us': 15.3,             # total T_1 at 300 GHz/4K per thesis Tab 2.5
+        'T2_us': 13.2,             # T_2 from thesis decoherence analysis
     },
 ]
 
@@ -117,24 +117,25 @@ t_gate_us = np.pi / (2 * zeta_range_MHz)  # μs (perché 1/MHz = 1 μs)
 for sys in systems:
     F = np.array([fidelity_decoherence(t, sys['T1_us'], sys['T2_us'])[0]
                   for t in t_gate_us])
-    ax.semilogx(zeta_range_MHz, F*100, label=f"{sys['name']} (T_1={sys['T1_us']} μs)",
+    ax.semilogx(zeta_range_MHz, F*100, label=f"{sys['name']} ($T_1={sys['T1_us']}$ μs)",
                 linewidth=2)
     # Marker per il valore vero
     F_actual = fidelity_decoherence(np.pi/(2*sys['zeta_zz_MHz']),
                                      sys['T1_us'], sys['T2_us'])[0]
     ax.scatter([sys['zeta_zz_MHz']], [F_actual*100], s=120, marker='o',
-               edgecolor='black', zorder=5, label=f"  → ζ_zz vero = {sys['zeta_zz_MHz']:.4f} MHz")
+               edgecolor='black', zorder=5, label=f"  → $\\zeta_{{zz}}$ = {sys['zeta_zz_MHz']:.4f} MHz")
 
 ax.axhline(99, color='gray', linestyle='--', alpha=0.6, label='Surface-code threshold (99%)')
 ax.axvline(0.124, color='C0', linestyle=':', alpha=0.4)
 ax.axvline(0.0009, color='C1', linestyle=':', alpha=0.4)
-ax.set_xlabel('Cross-Kerr |ζ_zz| (MHz)', fontsize=11)
-ax.set_ylabel('CZ gate fidelity F (%)', fontsize=11)
-ax.set_title('CZ free-evolution fidelity vs |ζ_zz|\n(t_CZ = π/(2|ζ_zz|), F limited by T₁/T₂)',
+ax.set_xlabel(r'Cross-Kerr $|\zeta_{zz}|$ (MHz)', fontsize=11)
+ax.set_ylabel(r'CZ gate fidelity $F$ (%)', fontsize=11)
+ax.set_title(r'CZ free-evolution fidelity vs $|\zeta_{zz}|$' + '\n' + r'($t_{CZ} = \pi/(2|\zeta_{zz}|)$, $F$ limited by $T_1/T_2$)',
              fontsize=11)
 ax.set_ylim(0, 100)
 ax.legend(loc='lower right', fontsize=8)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig('/home/claude/audit_g7/fig_modulo3_F_vs_zeta.pdf', bbox_inches='tight')
-print("Figura salvata: fig_modulo3_F_vs_zeta.pdf")
+plt.savefig('./CZ_freevolution_fidelity_vs_zeta.pdf', bbox_inches='tight')
+plt.savefig('./CZ_freevolution_fidelity_vs_zeta.png', dpi=160, bbox_inches='tight')
+print('Figure saved: CZ_freevolution_fidelity_vs_zeta.{pdf,png}')

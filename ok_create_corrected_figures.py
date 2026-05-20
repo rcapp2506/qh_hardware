@@ -154,6 +154,7 @@ ax4.set_xticks(range(len(params_names)))
 ax4.set_xticklabels(params_names, fontweight='bold')
 ax4.grid(True, alpha=0.3, axis='y')
 ax4.set_yscale('log')
+ax4.set_ylim(1, 200)  # headroom so topmost bar label does not collide with title
 
 for i, (val, name) in enumerate(zip(params_values, params_names)):
     if 'Δ' in name:
@@ -162,33 +163,64 @@ for i, (val, name) in enumerate(zip(params_values, params_names)):
         label = f'{val:.1f} MHz'
     ax4.text(i, val * 1.3, label, ha='center', fontsize=9, fontweight='bold')
 
-# Panel E: Energy levels
+# Panel E: Energy levels (transmon, with correct thermal populations)
+# Energy is in units of hbar*omega_q, the qubit transition energy.
+# In these units, level |n> sits approximately at n, with the
+# anharmonic correction shifting |2> down by |alpha|/omega_q and
+# |3> down by 3|alpha|/omega_q.
 ax5 = fig1.add_subplot(gs1[1, 2])
 
-omega_q = 300e9
-alpha = -15e9
-E0, E1 = 0, 1
-E2 = 2 + alpha/(omega_q * 2*np.pi)
-E3 = 3 + 3*alpha/(omega_q * 2*np.pi)
+omega_q_GHz = 300.0    # qubit transition frequency [GHz]
+alpha_GHz   = -15.0    # anharmonicity [GHz] (~5% of omega_q for a transmon)
+T_K         = 4.0      # operating temperature [K]
+
+ratio = alpha_GHz / omega_q_GHz   # = -0.05 here
+E0 = 0.0
+E1 = 1.0
+E2 = 2.0 + ratio
+E3 = 3.0 + 3.0 * ratio
+
+# Boltzmann thermal populations P_n = exp(-n h omega_q / k_B T) * 100%
+# (k_B/h is in Hz/K; we convert omega_q to Hz: omega_q_GHz * 1e9)
+beta_01 = omega_q_GHz * 1e9 / (k_B_freq * T_K)
+populations = np.array([np.exp(-i * beta_01) * 100 for i in range(4)])
+# At 300 GHz / 4K: P_0 = 100%, P_1 ~ 2.73%, P_2 ~ 0.075%, P_3 ~ 0.002%
 
 levels = [E0, E1, E2, E3]
-labels = ['|0⟩', '|1⟩', '|2⟩', '|3⟩']
+labels = [r'$|0\rangle$', r'$|1\rangle$', r'$|2\rangle$', r'$|3\rangle$']
 
-for i, (E, label) in enumerate(zip(levels, labels)):
-    ax5.plot([0, 1], [E, E], 'k-', linewidth=3)
-    ax5.text(1.1, E, label, fontsize=14, fontweight='bold', va='center')
-    pop = np.exp(-i * omega_q*2*np.pi / (k_B_freq * 4)) * 100
-    ax5.text(-0.3, E, f'{pop:.1f}%', fontsize=8, ha='right', va='center')
+for i, (E, label, pop) in enumerate(zip(levels, labels, populations)):
+    ax5.plot([0.18, 0.82], [E, E], 'k-', linewidth=3)
+    ax5.text(0.88, E, label, fontsize=14, fontweight='bold', va='center')
+    if pop >= 0.001:
+        if pop >= 10:
+            pop_txt = f'$P_{{{i}}} = {pop:.1f}$%'
+        else:
+            pop_txt = f'$P_{{{i}}} = {pop:.2g}$%'
+    else:
+        pop_txt = f'$P_{{{i}}} < 0.01$%'
+    ax5.text(1.10, E, pop_txt, fontsize=8.5, va='center', color='#555555')
 
-ax5.annotate('', xy=(0.5, E1), xytext=(0.5, E0),
-             arrowprops=dict(arrowstyle='<->', lw=2, color='#2E7D32'))
-ax5.text(0.6, (E0+E1)/2, 'ω_q', fontsize=11, fontweight='bold', color='#2E7D32')
+ax5.annotate('', xy=(0.50, E1 - 0.05), xytext=(0.50, E0 + 0.05),
+             arrowprops=dict(arrowstyle='->', lw=2.0, color='#2E7D32'))
+ax5.text(0.55, (E0 + E1)/2, r'$\omega_q$',
+         fontsize=12, fontweight='bold', color='#2E7D32', va='center')
 
-ax5.set_xlim(-0.4, 1.5)
-ax5.set_ylim(-0.2, 3.5)
-ax5.set_ylabel('Energy (ℏω_q units)', fontweight='bold')
-ax5.set_title('(e) Transmon Energy Levels', fontweight='bold', pad=10)
+# Anharmonic spacing labels on the left of the levels
+ax5.text(0.06, (E1 + E2)/2,
+         r'$\Delta E = 1.00\,\hbar\omega_q$',
+         fontsize=7.5, ha='left', va='center', color='#888888')
+ax5.text(0.06, (E2 + E3)/2,
+         f'$\\Delta E = {(E3 - E2):.2f}\\,\\hbar\\omega_q$',
+         fontsize=7.5, ha='left', va='center', color='#888888')
+
+ax5.set_xlim(0, 1.55)
+ax5.set_ylim(-0.25, 3.30)
+ax5.set_ylabel(r'Energy (units of $\hbar\omega_q$)', fontweight='bold')
+ax5.set_title('(e) Transmon energy levels\nand thermal populations at 4 K',
+              fontweight='bold', pad=10)
 ax5.set_xticks([])
+ax5.set_yticks([0, 1, 2, 3])
 ax5.grid(True, alpha=0.3, axis='y')
 
 plt.suptitle('300 GHz / 4K System Parameters', fontsize=16, fontweight='bold', y=0.98)

@@ -67,7 +67,7 @@ print("\n" + "="*78)
 print("MAPPA: F_CR raggiungibile in funzione di (ω_q, T_1)")
 print("="*78)
 
-omega_arr = np.linspace(200, 500, 30)   # GHz
+omega_arr = np.linspace(250, 500, 26)   # GHz, lower bound at thermal-cutoff edge
 T1_arr    = np.geomspace(1, 200, 30)     # μs (logspace 1-200 μs)
 
 F_map = np.zeros((len(omega_arr), len(T1_arr)))
@@ -147,17 +147,16 @@ cs = ax.contour(T1_grid, om_grid, F_map*100, levels=[95, 99, 99.5, 99.9],
                 colors='black', linewidths=[1, 2, 1.5, 1], linestyles=['--', '-', ':', '-.'])
 ax.clabel(cs, inline=True, fmt='%.1f%%', fontsize=9)
 ax.set_xscale('log')
-ax.set_xlabel('T₁ (μs)')
-ax.set_ylabel('ω_q (GHz)')
-ax.set_title('F_CR raggiungibile a 4K\n(Δ_q ottimizzato per ogni punto)', fontsize=11)
-plt.colorbar(im, ax=ax, label='F_CR (%)')
+ax.set_xlabel(r'$T_1$ ($\mu$s)')
+ax.set_ylabel(r'$\omega_q$ (GHz)')
+ax.set_title('Achievable $F_{CR}$ at 4 K\n($\\Delta_q$ optimized at each point)', fontsize=11)
+plt.colorbar(im, ax=ax, label=r'$F_{CR}$ (%)')
 
-# Mark some technology benchmarks
-ax.scatter([5], [300], s=150, c='red', marker='X', zorder=5,
-           label='Originale tesi (T_1≈5μs, 300 GHz)\n  → F<24%')
-ax.scatter([50], [300], s=150, c='blue', marker='*', zorder=5,
-           label='Sweet-spot (T_1≈50μs, 300 GHz)\n  → F>99%')
-ax.legend(loc='upper left', fontsize=8, framealpha=0.9)
+# Mark the operating point
+ax.scatter([50], [300], s=180, c='#1F4E8C', marker='*', zorder=5,
+           edgecolor='white', linewidth=1.0,
+           label=r'Operating point ($T_1 = 50$ $\mu$s, 300 GHz)')
+ax.legend(loc='upper left', fontsize=9, framealpha=0.9)
 
 # Heatmap t_gate
 ax = axes[1]
@@ -168,15 +167,16 @@ cs = ax.contour(T1_grid, om_grid, t_gate_map, levels=[100, 200, 500, 1000],
                 colors='white', linewidths=1.5)
 ax.clabel(cs, inline=True, fmt='%.0f ns', fontsize=9, colors='white')
 ax.set_xscale('log')
-ax.set_xlabel('T₁ (μs)')
-ax.set_ylabel('ω_q (GHz)')
-ax.set_title('t_gate ottimale (CR)', fontsize=11)
-plt.colorbar(im, ax=ax, label='t_gate (ns)')
+ax.set_xlabel(r'$T_1$ ($\mu$s)')
+ax.set_ylabel(r'$\omega_q$ (GHz)')
+ax.set_title('Optimal $t_{\\rm gate}$ (CR)', fontsize=11)
+plt.colorbar(im, ax=ax, label=r'$t_{\rm gate}$ (ns)')
 
-plt.suptitle('HEATS-Q a 4K: ricerca sweet-spot (g=500 MHz, |α|=1 GHz)',
+plt.suptitle('Cross-resonance sweet-spot search at 4 K ($g = 500$ MHz, $|\\alpha| = 1$ GHz)',
              fontsize=12, y=1.02)
 plt.tight_layout()
-plt.savefig('/home/claude/audit_g7/fig_modulo4q_sweetspot.pdf', bbox_inches='tight')
+plt.savefig("./cross_resonance_sweetspot_map_4K.pdf", bbox_inches="tight")
+plt.savefig("./cross_resonance_sweetspot_map_4K.png", dpi=160, bbox_inches="tight")
 
 # ─── 5. SCENARIO SWEET-SPOT: stampa parametri ───
 print("\n" + "="*78)

@@ -143,46 +143,47 @@ Dqs = np.array([r['Dq_MHz'] for r in results])
 
 # Panel A: rate del gate vs Δ_q
 ax = axes[0, 0]
-ax.semilogy(Dqs, [r['t_CR_ns'] for r in results], 'b-', linewidth=2, label='t_CR cross-resonance')
-ax.axhline(200, color='green', linestyle='--', alpha=0.6, label='target < 200 ns')
-ax.axhline(500, color='orange', linestyle=':', alpha=0.6, label='marginale 500 ns')
-ax.set_xlabel('Δ_q (MHz)'); ax.set_ylabel('t_CR (ns)')
+ax.semilogy(Dqs, [r['t_CR_ns'] for r in results], 'b-', linewidth=2, label=r'$t_{CR}$ cross-resonance')
+ax.axhline(200, color='green', linestyle='--', alpha=0.6, label='target $<$ 200 ns')
+ax.axhline(500, color='orange', linestyle=':', alpha=0.6, label='marginal: 500 ns')
+ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$t_{CR}$ (ns)')
 ax.set_title('A. Gate time vs qubit-qubit detuning')
 ax.grid(True, alpha=0.3); ax.legend(fontsize=9); ax.set_ylim(50, 1e5)
 
 # Panel B: cross-Kerr statico parassita
 ax = axes[0, 1]
 ax.semilogy(Dqs, [abs(r['zeta_zz_kHz']) for r in results], 'r-', linewidth=2)
-ax.set_xlabel('Δ_q (MHz)'); ax.set_ylabel('|ζ_zz| (kHz)')
-ax.set_title('B. Cross-Kerr statico parassita\n(piccolo è meglio)')
+ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$|\zeta_{zz}|$ (kHz)')
+ax.set_title('B. Static parasitic cross-Kerr\n(smaller is better)')
 ax.grid(True, alpha=0.3)
 
 # Panel C: spectral selectivity & crosstalk
 ax = axes[1, 0]
 ax2 = ax.twinx()
-ax.plot(Dqs, [r['selectivity'] for r in results], 'g-', linewidth=2, label='selectivity')
-ax2.plot(Dqs, [r['crosstalk_pct'] for r in results], 'orange', linewidth=2, label='crosstalk %')
+ax.plot(Dqs, [r['selectivity'] for r in results], 'g-', linewidth=2, label='Selectivity')
+ax2.plot(Dqs, [r['crosstalk_pct'] for r in results], 'orange', linewidth=2, label='Crosstalk (%)')
 ax.axhline(4, color='gray', linestyle='--', alpha=0.5)
 ax2.axhline(5, color='gray', linestyle=':', alpha=0.5)
-ax.set_xlabel('Δ_q (MHz)'); ax.set_ylabel('Selectivity', color='g')
+ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel('Selectivity', color='g')
 ax2.set_ylabel('Crosstalk (%)', color='orange')
 ax.set_title('C. Single-qubit drive selectivity & crosstalk')
 ax.grid(True, alpha=0.3); ax.set_ylim(0, 30); ax2.set_ylim(0, 30)
 
 # Panel D: fidelity totale
 ax = axes[1, 1]
-ax.plot(Dqs, [r['F_CR']*100 for r in results], 'b-', linewidth=2, label='F_CR (T₁/T₂ limit)')
-ax.axhline(99, color='gray', linestyle='--', alpha=0.6, label='soglia 99%')
-ax.axhline(99.9, color='gray', linestyle=':', alpha=0.6, label='soglia 99.9%')
+ax.plot(Dqs, [r['F_CR']*100 for r in results], 'b-', linewidth=2, label=r'$F_{CR}$ ($T_1/T_2$ limit)')
+ax.axhline(99, color='gray', linestyle='--', alpha=0.6, label='99% threshold')
+ax.axhline(99.9, color='gray', linestyle=':', alpha=0.6, label='99.9% threshold')
 if best:
     ax.scatter([best['Dq_MHz']], [best['F_CR']*100], s=120, c='red', zorder=5,
                label=f'Δ_q* = {best["Dq_MHz"]:.0f} MHz')
-ax.set_xlabel('Δ_q (MHz)'); ax.set_ylabel('F_CR (%)')
-ax.set_title('D. Fidelity attesa')
+ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$F_{CR}$ (%)')
+ax.set_title('D. Expected fidelity')
 ax.set_ylim(95, 100); ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
 
-plt.suptitle('Trade-off di Δ_q per HEATS-Q baseline (g=80 MHz, α=-200 MHz)',
+plt.suptitle(r'Trade-off of $\Delta_q$ for the baseline configuration ($g=80$ MHz, $\alpha=-200$ MHz)',
              fontsize=12, y=1.00)
 plt.tight_layout()
-plt.savefig('/home/claude/audit_g7/fig_modulo4bis_tradeoff_Dq.pdf', bbox_inches='tight')
-print(f"\nFigura salvata: fig_modulo4bis_tradeoff_Dq.pdf")
+plt.savefig('./qubit_detuning_tradeoff_baseline.pdf', bbox_inches='tight')
+plt.savefig('./qubit_detuning_tradeoff_baseline.png', dpi=160, bbox_inches='tight')
+print('\nFigure saved: qubit_detuning_tradeoff_baseline.{pdf,png}')
