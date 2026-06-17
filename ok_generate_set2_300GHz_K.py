@@ -285,7 +285,7 @@ ax5.axis('off')
 
 table_data = [
     ['Configuration', 'ω₀₁\n(GHz)', 'T\n(K)', 'n(T)\n(%)', 'ħω/(k_BT)', 'Status'],
-    ['Traditional\nAl transmon', '5.8', '0.020', '0.0001', '11998.5', '✓ Excellent'],
+    ['Traditional\nAl transmon', '5.8', '0.020', '0.0001', '13.9', '✓ Excellent'],
     ['Design\nat 4 K', '300', '4', '2.81', '3.60', '✓ Good'],
     ['Design\nat 6 K', '300', '6', '9.98', '2.40', '△ Marginal'],
     ['Design\nat 8 K', '300', '8', '19.81', '1.80', '✗ Poor'],

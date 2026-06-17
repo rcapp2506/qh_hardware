@@ -16,10 +16,9 @@ Numerical content unchanged:
   Panel (a): Dielectric 52x, Radiative 2675x, Quasiparticle 1x
   Panel (b): Standard Si 10 us, High-rho Si 200 us, Sapphire 100 us,
              Target 500 us; minimum threshold 30 us
-  Panel (c): Current 97.5%, Better Substrate +0.3% (97.8%),
-             3D Cavity +0.7% (98.2%), Optimized Pulses +0.2% (97.7%),
-             Lower T +0.8% (98.3%), All Combined +1.6% (99.1%);
-             threshold 98%.
+  Panel (c): Current 97.90%, Better coherence 98.20%, Optimized control 98.25%,
+             Thermal ceiling 98.59% (= 100% - eps_thermal at fixed 300 GHz / 4 K);
+             threshold 98%. No temperature reduction (4 K is the design floor).
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,31 +122,30 @@ ax_b.grid(axis='y', alpha=0.3, linestyle=':')
 # ============================================================
 ax_c = fig.add_subplot(gs[1, 1])
 
-pathways = ['Current', 'Better\nsubstrate', '3D cavity\n(60 dB)',
-            'Optimized\npulses', 'Lower T\n(3 K)', 'All\ncombined']
-fidelities = [97.5, 97.8, 98.2, 97.7, 98.3, 99.1]
-deltas = ['—', '+0.3%', '+0.7%', '+0.2%', '+0.8%', '+1.6%']
-colors_c = ['#E59A40', '#92C394', '#5BAA66', '#7BB58A', '#92C394', '#3A6B43']
+pathways = ['Current', 'Better\ncoherence', 'Optimized\ncontrol', 'Thermal\nceiling']
+fidelities = [97.90, 98.20, 98.25, 98.59]
+deltas = ['—', '+0.30%', '+0.35%', 'ceiling']
+colors_c = ['#E59A40', '#92C394', '#5BAA66', '#3A6B43']
 
 ax_c.axhspan(98, 100, color='#D6EBDD', alpha=0.5, zorder=0)
 
-bars = ax_c.bar(range(6), fidelities, color=colors_c,
-                edgecolor='black', linewidth=1.4, width=0.65)
+bars = ax_c.bar(range(len(fidelities)), fidelities, color=colors_c,
+                edgecolor='black', linewidth=1.4, width=0.6)
 
-ax_c.axhline(97.5, color='#D85959', linewidth=1.6, label='Current: 97.5%')
+ax_c.axhline(97.90, color='#D85959', linewidth=1.6, label='Current: 97.90%')
 ax_c.axhline(98.0, color='#3A6B43', linestyle='--', linewidth=1.6,
              label='Threshold: 98%')
 
 for i, (bar, f, d) in enumerate(zip(bars, fidelities, deltas)):
-    ax_c.text(bar.get_x() + bar.get_width()/2, f + 0.05,
-              f'{f:.1f}%\n({d})',
+    ax_c.text(bar.get_x() + bar.get_width()/2, f + 0.03,
+              f'{f:.2f}%\n({d})',
               ha='center', va='bottom', fontsize=8.5, fontweight='bold')
 
-ax_c.set_xticks(range(6))
+ax_c.set_xticks(range(len(fidelities)))
 ax_c.set_xticklabels(pathways, fontsize=9)
 ax_c.set_ylabel('CNOT fidelity (%)')
-ax_c.set_title('(c) Improvement pathways to reach threshold', fontweight='bold')
-ax_c.set_ylim(97.0, 99.7)
+ax_c.set_title('(c) Improvement pathways at fixed 4 K', fontweight='bold')
+ax_c.set_ylim(97.0, 99.0)
 ax_c.legend(loc='upper left', fontsize=9, framealpha=0.95)
 ax_c.grid(axis='y', alpha=0.3, linestyle=':')
 

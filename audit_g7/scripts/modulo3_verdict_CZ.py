@@ -2,17 +2,24 @@
 Modulo 3 — Verdetto sul gate CZ free-evolution
 ===============================================
 
-Calcolo della fidelity di un gate CZ implementato come free-evolution sotto ζ_zz σ_z⊗σ_z,
-con tempo di gate t_CZ = π/(2|ζ_zz|).
+Fidelity of a free-evolution CZ driven by the longitudinal cross-Kerr
+LEVEL SHIFT xi_ZZ = E11 + E00 - E01 - E10 (ratified convention; the
+sigma_z x sigma_z coefficient is zeta_zz = xi_ZZ/4).
 
-Modello di errore: limitazione di T_1 (relaxation) e T_phi (pure dephasing).
-Per un gate di durata t_gate, la fidelity è approssimativamente:
+For a free-evolution CZ the conditional pi phase accumulates at the rate
+set by the level shift, so the gate time is
 
-   F ≈ 1 - (4/15) (t_gate/T_1) - (4/15) (t_gate/T_phi)        [Abad 2022, Krantz 2019]
-                  ↑                          ↑
-            relax. errors           dephasing errors
+    t_CZ = pi / |xi_ZZ| .
 
-Per F > 99% (soglia surface code) serve t_gate << T_2*.
+Error model: T1 (relaxation) and T_phi (pure dephasing) limited,
+
+    F = exp(-t/T1) * exp(-t/T_phi)^(1/2),   1/T_phi = 1/T2 - 1/(2 T1).
+
+Canonical operating points (exact diagonalization, Tab. 2 J_vs_zetazz):
+    baseline mK (5.8/5.2 GHz):  |xi_ZZ| = 106 kHz
+    300 GHz / 4 K:              |xi_ZZ| =  74 kHz
+Both fall well below the surface-code threshold, motivating the
+echo cross-resonance gate adopted in the chapter.
 """
 
 import numpy as np
@@ -21,116 +28,78 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 print("="*78)
-print("MODULO 3 — Verdetto: il CZ free-evolution è impraticabile per HEATS-Q")
+print("MODULO 3 — Verdetto: il CZ free-evolution e' impraticabile per HEATS-Q")
 print("="*78)
-
-# Coherence times: dichiarati nel manoscritto (§3.6, baseline 5-8 GHz)
-# T_1 baseline mK: ~ 50 μs (transmon Al, state-of-the-art)
-# T_2 (Hahn echo) baseline mK: ~ 30 μs
-# T_1 innovation 300 GHz @ 4K: stima ~ 1-10 μs (degradato da quasi-particles thermal)
-# T_2 innovation 300 GHz @ 4K: stima ~ 0.5-5 μs
 
 systems = [
     {
-        'name': 'Baseline mK (5-8 GHz)',
-        'zeta_zz_MHz': 0.124,
+        'name': 'Baseline mK (5.8/5.2 GHz)',
+        'xi_ZZ_MHz': 0.106,        # 106 kHz (canonical, exact diag)
         'T1_us': 50,
         'T2_us': 30,
+        'color': 'C0',
     },
     {
         'name': 'Elevated-T design (300 GHz, 4 K)',
-        'zeta_zz_MHz': 0.0009,    # 0.9 kHz
-        'T1_us': 15.3,             # total T_1 at 300 GHz/4K per thesis Tab 2.5
-        'T2_us': 13.2,             # T_2 from thesis decoherence analysis
+        'xi_ZZ_MHz': 0.074,        # 74 kHz (canonical, exact diag)
+        'T1_us': 15.3,             # total T1 at 300 GHz/4K (canonical)
+        'T2_us': 13.1,             # T2 (canonical)
+        'color': 'C1',
     },
 ]
 
 def fidelity_decoherence(t_gate_us, T1_us, T2_us):
-    """
-    Average gate fidelity with depolarizing noise channel from T1, T2.
-    Per Abad et al. PRX Quantum 3, 030327 (2022) o Krantz 2019:
-        F = 1 - (1/2)·t/T1 - (1/4)·t/T_phi  (semplificato per CZ)
-    Una formula più conservativa è:
-        F ≈ exp(-t/T_2eff)  con T_2eff^-1 = 1/(2T_1) + 1/T_phi
-    """
-    Tphi_inv = max(0, 1/T2_us - 1/(2*T1_us))
-    if Tphi_inv == 0:
-        Tphi_us = float('inf')
-    else:
-        Tphi_us = 1/Tphi_inv
-    # Approx exponential decoherence envelope:
+    Tphi_inv = max(0.0, 1.0/T2_us - 1.0/(2.0*T1_us))
+    Tphi_us = (1.0/Tphi_inv) if Tphi_inv > 0 else float('inf')
     F = np.exp(-t_gate_us/T1_us) * np.exp(-t_gate_us/Tphi_us)**0.5
     return F, Tphi_us
 
-print(f"\n{'Sistema':<30s} {'ζ_zz [MHz]':>11s} {'t_CZ [μs]':>12s} {'T_1 [μs]':>10s} {'T_2 [μs]':>10s} {'F_CZ':>8s}")
-print("-"*90)
+print(f"\n{'System':<34s} {'xi_ZZ [kHz]':>12s} {'t_CZ [us]':>11s} "
+      f"{'T1 [us]':>9s} {'T2 [us]':>9s} {'F_CZ':>8s}")
+print("-"*88)
 
 results = []
-for sys in systems:
-    t_CZ = np.pi / (2 * sys['zeta_zz_MHz'])  # in μs (perché 1/MHz = 1 μs)
-    F, _ = fidelity_decoherence(t_CZ, sys['T1_us'], sys['T2_us'])
-    print(f"{sys['name']:<30s} {sys['zeta_zz_MHz']:>11.4f} {t_CZ:>12.2f} "
-          f"{sys['T1_us']:>10.1f} {sys['T2_us']:>10.1f} {F:>8.4f}")
-    results.append((sys['name'], t_CZ, F))
+for s in systems:
+    t_CZ = np.pi / s['xi_ZZ_MHz']     # us  (t_CZ = pi/|xi_ZZ|, 1/MHz = us)
+    F, _ = fidelity_decoherence(t_CZ, s['T1_us'], s['T2_us'])
+    print(f"{s['name']:<34s} {s['xi_ZZ_MHz']*1e3:>12.0f} {t_CZ:>11.1f} "
+          f"{s['T1_us']:>9.1f} {s['T2_us']:>9.1f} {F*100:>7.1f}%")
+    results.append((s['name'], t_CZ, F))
 
 print(f"""
-─────────────────────────────────────────────────────────────────────────────
-Soglia di "usabilità" per QEC: F > 99% (surface code threshold)
-                              F > 99.9% (per qubit logici a basso overhead)
-─────────────────────────────────────────────────────────────────────────────
-
-VERDETTO:
-""")
+-----------------------------------------------------------------------------
+QEC usability threshold: F > 99% (surface-code threshold)
+-----------------------------------------------------------------------------
+VERDICT:""")
 for name, t_CZ, F in results:
-    if F < 0.99:
-        if F < 0.5:
-            verdict = "❌ IMPRATICABILE (F < 50%)"
-        elif F < 0.9:
-            verdict = "❌ INADEGUATO (F < 90%)"
-        else:
-            verdict = "❌ SOTTO SOGLIA QEC (F < 99%)"
-    else:
-        verdict = "✓ OK"
-    print(f"  {name}:   {verdict}    [t_CZ = {t_CZ:.1f} μs, F = {F*100:.1f}%]")
+    verdict = "OK" if F >= 0.99 else "BELOW QEC THRESHOLD (F < 99%)"
+    print(f"  {name}:  {verdict}  [t_CZ = {t_CZ:.1f} us, F = {F*100:.1f}%]")
 
-# ────────────────────────────────────────────────────────────────────────────
-# CONFRONTO: cosa succederebbe se la formula 2.39 fosse vera?
-# ────────────────────────────────────────────────────────────────────────────
-print(f"""
-──────────────────────────────────────────────────────────────────────────
-CONFRONTO: il gate-time DICHIARATO nella tesi originale era
-   t_CZ = π/(2|J|) = π/(2·7.03 MHz) = 224 ns      (basato su formula sbagliata)
-
-Con il VERO ζ_zz = 0.124 MHz:
-   t_CZ = π/(2·0.124 MHz) = {np.pi/(2*0.124)*1e3:.0f} ns ≈ {np.pi/(2*0.124):.1f} μs
-   
-   Discrepanza:  {12800/224:.0f}x più lento del previsto.
-""")
-
-# ────────────────────────────────────────────────────────────────────────────
-# FIGURA: F vs ζ_zz a confronto con T_1
-# ────────────────────────────────────────────────────────────────────────────
+# ----------------------------------------------------------------------------
+# FIGURE: F vs |xi_ZZ|
+# ----------------------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(8, 5))
-zeta_range_MHz = np.logspace(-3, 1.5, 200)  # 0.001 — 30 MHz
-t_gate_us = np.pi / (2 * zeta_range_MHz)  # μs (perché 1/MHz = 1 μs)
+xi_range_MHz = np.logspace(-2, 1.5, 300)        # 10 kHz -- ~30 MHz
+t_gate_us = np.pi / xi_range_MHz                # t_CZ = pi/|xi_ZZ|
 
-for sys in systems:
-    F = np.array([fidelity_decoherence(t, sys['T1_us'], sys['T2_us'])[0]
+for s in systems:
+    F = np.array([fidelity_decoherence(t, s['T1_us'], s['T2_us'])[0]
                   for t in t_gate_us])
-    ax.semilogx(zeta_range_MHz, F*100, label=f"{sys['name']} ($T_1={sys['T1_us']}$ μs)",
-                linewidth=2)
-    # Marker per il valore vero
-    F_actual = fidelity_decoherence(np.pi/(2*sys['zeta_zz_MHz']),
-                                     sys['T1_us'], sys['T2_us'])[0]
-    ax.scatter([sys['zeta_zz_MHz']], [F_actual*100], s=120, marker='o',
-               edgecolor='black', zorder=5, label=f"  → $\\zeta_{{zz}}$ = {sys['zeta_zz_MHz']:.4f} MHz")
+    ax.semilogx(xi_range_MHz*1e3, F*100, color=s['color'],
+                label=f"{s['name']} ($T_1={s['T1_us']}$ $\\mu$s)", linewidth=2)
+    xi = s['xi_ZZ_MHz']
+    F_pt = fidelity_decoherence(np.pi/xi, s['T1_us'], s['T2_us'])[0]
+    ax.scatter([xi*1e3], [F_pt*100], s=120, marker='o', color=s['color'],
+               edgecolor='black', zorder=5,
+               label=f"  $\\to |\\xi_{{ZZ}}|$ = {xi*1e3:.0f} kHz, F = {F_pt*100:.0f}%")
+    ax.axvline(xi*1e3, color=s['color'], linestyle=':', alpha=0.4)
 
-ax.axhline(99, color='gray', linestyle='--', alpha=0.6, label='Surface-code threshold (99%)')
-ax.axvline(0.124, color='C0', linestyle=':', alpha=0.4)
-ax.axvline(0.0009, color='C1', linestyle=':', alpha=0.4)
-ax.set_xlabel(r'Cross-Kerr $|\zeta_{zz}|$ (MHz)', fontsize=11)
+ax.axhline(99, color='gray', linestyle='--', alpha=0.6,
+           label='Surface-code threshold (99%)')
+ax.set_xlabel(r'Cross-Kerr level shift $|\xi_{ZZ}|$ (kHz)', fontsize=11)
 ax.set_ylabel(r'CZ gate fidelity $F$ (%)', fontsize=11)
-ax.set_title(r'CZ free-evolution fidelity vs $|\zeta_{zz}|$' + '\n' + r'($t_{CZ} = \pi/(2|\zeta_{zz}|)$, $F$ limited by $T_1/T_2$)',
+ax.set_title(r'CZ free-evolution fidelity vs $|\xi_{ZZ}|$'
+             + '\n' + r'($t_{CZ} = \pi/|\xi_{ZZ}|$, $F$ limited by $T_1/T_2$)',
              fontsize=11)
 ax.set_ylim(0, 100)
 ax.legend(loc='lower right', fontsize=8)

@@ -1,0 +1,69 @@
+{
+  "_meta": {
+    "purpose": "Single source of truth for all physical parameters in Chapter 2 (Hardware). Every number quoted in quantum_hw.tex must derive from this file via derive_canonical.py, which emits LaTeX macros. No physical value is to be typed by hand in the manuscript.",
+    "branch": "wave-physics-cap2",
+    "decisions": {
+      "1_anharmonicity_300GHz": "alpha = -15 GHz (E_J/E_C = 50). Junction-sizing branch retained; gate tables rewritten accordingly.",
+      "2_zeta_convention": "zeta_zz reported as the level shift xi_ZZ = E_11 + E_00 - E_01 - E_10 (standard CR/ZZ rate). sigma_z(x)sigma_z coefficient = xi_ZZ/4 stated once for completeness. Numerical values from exact diagonalization, not the perturbative formula.",
+      "3_qubit_qubit_detuning": "Delta_q = 600 MHz canonical.",
+      "4_F_CNOT_4K": "97.9% canonical (Wave-M re-audit), supersedes 95.95/97.3/~96."
+    }
+  },
+
+  "operating_points": {
+    "baseline_mK": {
+      "role": "Two-qubit validation device (millikelvin).",
+      "omega_q1_GHz": 5.8,
+      "omega_q2_GHz": 5.2,
+      "omega_r_GHz": 6.5,
+      "g1_GHz": 0.080,
+      "g2_GHz": 0.080,
+      "alpha1_GHz": -0.200,
+      "alpha2_GHz": -0.200
+    },
+    "innovation_300GHz": {
+      "role": "Elevated-temperature (4 K) innovation device.",
+      "omega_q1_GHz": 300.3,
+      "omega_q2_GHz": 299.7,
+      "omega_r_GHz": 301.3,
+      "g1_GHz": 0.080,
+      "g2_GHz": 0.080,
+      "alpha1_GHz": -15.0,
+      "alpha2_GHz": -15.0,
+      "g_provenance": "Representative microwave-analog value; absolute g at 300 GHz requires EM simulation of the 3D geometry (reviewer G15). Quote with explicit hedge."
+    }
+  },
+
+  "thermal_300GHz_4K": {
+    "_note": "Thermal occupation at the 300 GHz / 4 K operating point. n_th = 1/(exp(hf/kT)-1); epsilon_thermal = n_th * 0.5 (chapter model). F_ceiling = 1 - epsilon_thermal is the fidelity ceiling imposed by the IRREDUCIBLE thermal term at fixed 300 GHz / 4 K. Lowering T is excluded by design: 4 K is the cryocooler-compatible floor; going below requires He-3/dilution, which the architecture exists to avoid.",
+    "qubit_freq_GHz": 300.0,
+    "T_operating_K": 4.0
+  },
+
+  "decoherence_breakdown_innovation_us": {
+    "_note": "Per-channel T1 contributions (microseconds) at the 300 GHz / 4 K operating point. T1_total is their harmonic sum. Verified by Wave-M re-audit (T1^qp = 49 us literature consensus, NbN Delta = 2.6 meV).",
+    "T1_dielectric": 53.1,
+    "T1_quasiparticle": 48.6,
+    "T1_radiative": 373.8,
+    "T1_TLS": 50.0,
+    "T1_Purcell": 320.0,
+    "T_phi_us": 23.0,
+    "T2_echo_us": 26.3
+  },
+
+  "gate_fidelity": {
+    "F_CNOT_4K_percent": 97.9,
+    "F_CNOT_baseline_percent": 98.7,
+    "epsilon_single_percent": 0.187,
+    "epsilon_decoh_percent": 0.58,
+    "decoherence_ceiling_percent": 99.42,
+    "_note": "Ratified inputs: F_CNOT (decision 4), F_CNOT_baseline (decision 6, supersedes 99.55), epsilon_decoh (Wave-M). t_CNOT is DERIVED as epsilon_decoh * T2_echo = 152.5 ns. decoherence_ceiling = 1 - epsilon_decoh: best achievable F at this T2 if control were perfect (frames 97.9% as control-limited). F_CNOT supersedes legacy 95.95/97.3/~96."
+  },
+
+  "superconductor": {
+    "material": "NbN",
+    "gap_2Delta_meV": 5.2,
+    "Delta_meV": 2.6,
+    "_note": "Single canonical gap. 2*Delta = 5.2 meV; Delta = 2.6 meV. Eliminate the 2.8 meV and 1.49 meV occurrences (the latter was a stray paste of Delta_gap into the leakage equation)."
+  }
+}

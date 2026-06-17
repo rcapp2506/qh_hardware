@@ -99,50 +99,52 @@ ax2.grid(True, alpha=0.3, axis='y')
 # Panel C: Junction size vs current density (CORRECTED)
 ax3 = fig1.add_subplot(gs1[1, 0])
 
-J_c_values = np.array([100, 500, 1000, 2000, 5000])
+J_c_values = np.array([500, 1000, 3000, 6000, 10000])  # A/cm^2
 I_c_correct = 1.510e-6  # CORRECTED VALUE
+C_budget = 1.29  # fF (E_C = 15 GHz)
 
 diameters_corrected = []
+C_J_list = []
 for J_c in J_c_values:
-    A = I_c_correct / (J_c * 1e4)
-    d = np.sqrt(4 * A / np.pi) * 1e9
+    A = I_c_correct / (J_c * 1e4)          # m^2
+    d = np.sqrt(4 * A / np.pi) * 1e9       # nm
+    cs = 20.0 * np.sqrt(J_c / 1000.0)      # fF/um^2  (empirical NbN/AlN scaling)
+    C = cs * (A * 1e12)                    # fF
     diameters_corrected.append(d)
+    C_J_list.append(C)
 
+# Colour by capacitance budget: green meets it, orange marginal, red over
 colors_jc = []
-for d in diameters_corrected:
-    if d < 200:
-        colors_jc.append('#C62828')
-    elif d < 500:
-        colors_jc.append('#FF9800')
-    elif d < 1000:
-        colors_jc.append('#FFC107')
+for C in C_J_list:
+    if C <= C_budget * 1.05:
+        colors_jc.append('#2E7D32')   # meets budget
+    elif C <= C_budget * 1.5:
+        colors_jc.append('#FF9800')   # marginal
     else:
-        colors_jc.append('#EF5350')
+        colors_jc.append('#C62828')   # over budget
 
 bars = ax3.barh(range(len(J_c_values)), diameters_corrected, color=colors_jc,
-                 edgecolor='black', linewidth=2, alpha=0.7)
+                 edgecolor='black', linewidth=2, alpha=0.8)
 
-ax3.axvline(200, color='orange', linestyle='--', linewidth=2, alpha=0.7,
-            label='200 nm (target)')
-ax3.axvline(500, color='green', linestyle='--', linewidth=2, alpha=0.7,
-            label='500 nm (easier)')
+ax3.axvline(180, color='green', linestyle='--', linewidth=2, alpha=0.7,
+            label=r'180 nm ($J_c\approx6$ kA/cm$^2$, meets $C_\Sigma$)')
 
 ax3.set_xlabel('Junction Diameter (nm)', fontweight='bold')
 ax3.set_ylabel('Current Density (A/cm²)', fontweight='bold')
-ax3.set_title(f'(c) Junction Size (I_c={I_c_correct*1e6:.2f} µA)', fontweight='bold', pad=10)
+ax3.set_title(f'(c) Junction Size & Capacitance (I_c={I_c_correct*1e6:.2f} µA)', fontweight='bold', pad=10)
 ax3.set_yticks(range(len(J_c_values)))
 ax3.set_yticklabels([f'{J:.0f}' for J in J_c_values])
-ax3.legend(fontsize=9)
+ax3.legend(fontsize=8)
 ax3.grid(True, alpha=0.3, axis='x')
 
-for i, (d, J_c) in enumerate(zip(diameters_corrected, J_c_values)):
-    ax3.text(d + 50, i, f'{d:.0f} nm', va='center', fontsize=9, fontweight='bold')
+for i, (d, C) in enumerate(zip(diameters_corrected, C_J_list)):
+    ax3.text(d + 20, i, f'{d:.0f} nm\nC={C:.1f} fF', va='center', fontsize=7.5, fontweight='bold')
 
 # Panel D: Dispersive parameters
 ax4 = fig1.add_subplot(gs1[1, 1])
 
 params_names = ['|χ₁|', '|χ₂|', 'J', 'Δ₁/g', 'Δ₂/g']
-params_values = [5.36, 1.70, 9.38, 40, 80]  # CORRECTED chi values (300 GHz / 4K design point); J = transverse exchange (post-G7)
+params_values = [6.00, 3.61, 5.2, 12.5, 20]  # canonical Design B (300 GHz / 4K): |chi1|,|chi2|,J,Delta1/g,Delta2/g
 colors_params = ['#42A5F5', '#29B6F6', '#26C6DA', '#66BB6A', '#9CCC65']
 
 bars = ax4.bar(range(len(params_names)), params_values, color=colors_params,
@@ -324,7 +326,7 @@ for i, (F, gate) in enumerate(zip(fidelities, gates)):
 ax4 = fig2.add_subplot(gs2[1, 2])
 
 error_sources = ['Decoherence', 'Thermal', 'Leakage', 'Control']
-error_values = [2.545, 1.405, 0.000, 0.100]  # CORRECTED
+error_values = [0.58, 1.41, 0.000, 0.100]  # echo-CR budget (WAVE-M): sum 2.09% -> F=97.91%
 colors_err = ['#EF5350', '#FFA726', '#AB47BC', '#42A5F5']
 
 bars = ax4.barh(range(len(error_sources)), error_values, color=colors_err,
@@ -352,15 +354,15 @@ ax4.text(0.98, 0.05, f'Total: {total_error:.2f}%\nF={100-total_error:.2f}%',
 ax5 = fig2.add_subplot(gs2[2, :])
 
 temps_fid = np.array([2, 3, 4, 5, 6, 8, 10])
-T2_corrected = 13.2e-6
-t_CNOT = 167.6e-9
+T2_echo = 26.3e-6
+t_CNOT = 152.5e-9       # echo-CR: t_CNOT = eps_decoh * T2_echo
 alpha_hz = 15e9
-J_transverse = 9.38e6   # transverse exchange J (post-G7), 300 GHz design point
+J_transverse = 5.2e6    # transverse exchange J (exact diagonalization, 300 GHz design point)
 
 fidelities_temp = []
 for T_scan in temps_fid:
     n_th_scan = thermal_occupation(300e9, T_scan)
-    eps_decoh = t_CNOT / (T2_corrected / 2)
+    eps_decoh = t_CNOT / T2_echo            # echo-CR decoherence error (~0.58%)
     eps_thermal = n_th_scan * 0.5
     eps_leakage = (J_transverse / abs(alpha_hz))**2
     eps_control = 0.001
@@ -513,7 +515,7 @@ plt.close()
 print("\n✓ All corrected figures generated!")
 print(f"\nKEY CORRECTED VALUES IN FIGURES:")
 print(f"  I_c = {I_c*1e6:.3f} µA")
-print(f"  Junction diameter: 196-1387 nm (depending on J_c)")
+print(f"  Junction diameter: 139-620 nm (J_c 0.5-10 kA/cm2); optimal ~180 nm at J_c~6 kA/cm2")
 print(f"  T₁ = {T1_total*1e6:.1f} µs")
 print(f"  T₂ = {T2_total*1e6:.1f} µs")
 print(f"  F_CNOT = {F_CNOT*100:.2f}%")
