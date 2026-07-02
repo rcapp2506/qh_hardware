@@ -36,7 +36,7 @@ T2_echo  = 26.3e-6  # s (Hahn-echo, ~2 * T2_total)
 F_single = 0.99813  # CORRECTED (single-qubit, 20 ns gate vs T_2 free)
 # F_CNOT under echo-CR: eps_decoh = t_CNOT / T_2_echo (not 2*t_CNOT / T_2 free)
 F_CNOT_naive = 0.9595   # legacy estimate (no echo): kept for reference
-F_CNOT       = 0.9790   # WAVE-M, echo-CR: t_CNOT=167.6 ns, T_2,echo=26.3 us
+F_CNOT       = 0.9790   # WAVE-M, echo-CR: t_CNOT=152.5 ns, T_2,echo=26.3 us
                         # -> eps_decoh ~ 0.58%, eps_total ~ 2.10%
 
 print("Creating corrected figures with verified values...")
@@ -242,14 +242,17 @@ gs2 = GridSpec(3, 3, figure=fig2, hspace=0.3, wspace=0.3)
 ax1 = fig2.add_subplot(gs2[0, :])
 
 freqs_scan = np.linspace(5, 500, 100)
-T1_diel_5 = 100
-T1_diel_scan = T1_diel_5 * (5 / freqs_scan)
-T1_qp_scan = np.ones_like(freqs_scan) * 200
-T1_rad_unshielded_scan = T1_diel_5 * (5 / freqs_scan)**2
-T1_rad_shielded_scan = T1_rad_unshielded_scan * 1000
+# Curves anchored to the canonical 300 GHz / 4 K budget values (panel b):
+# dielectric 53.1 us @ 300 GHz with 1/omega scaling (Q_eff = 1/(p tan d) const),
+# quasiparticle 48.6 us (thermal x_qp at 4 K, ~frequency-flat),
+# radiative-3D 373.8 us @ 300 GHz with the same 1/omega^2 shape as before.
+T1_diel_scan = 53.1 * (300.0 / freqs_scan)
+T1_qp_scan = np.ones_like(freqs_scan) * 48.6
+T1_rad_shielded_scan = 373.8 * (300.0 / freqs_scan)**2
+T1_rad_unshielded_scan = T1_rad_shielded_scan / 1000.0
 
 ax1.plot(freqs_scan, T1_diel_scan, '-', linewidth=3, label='Dielectric (∝ 1/ω)', color='#EF5350')
-ax1.plot(freqs_scan, T1_qp_scan, '-', linewidth=3, label='Quasiparticle (const)', color='#4CAF50')
+ax1.plot(freqs_scan, T1_qp_scan, '-', linewidth=3, label='Quasiparticle (4 K)', color='#4CAF50')
 ax1.plot(freqs_scan, T1_rad_unshielded_scan, '--', linewidth=2, label='Radiative unshielded', color='#C62828', alpha=0.7)
 ax1.plot(freqs_scan, T1_rad_shielded_scan, '-', linewidth=3, label='Radiative 3D cavity', color='#26C6DA')
 
@@ -297,7 +300,7 @@ ax2.text(0.5, 0.95, f'Total T₁ = {T1_total*1e6:.1f} µs',
 # Panel C: Gate fidelities (CORRECTED)
 ax3 = fig2.add_subplot(gs2[1, 1])
 
-gates = ['Single-qubit\n(20 ns)', 'CNOT\n(168 ns)']
+gates = ['Single-qubit\n(20 ns)', 'CNOT\n(152.5 ns)']
 fidelities = [F_single*100, F_CNOT*100]  # CORRECTED
 colors_gates = ['#42A5F5', '#FF6F00']
 

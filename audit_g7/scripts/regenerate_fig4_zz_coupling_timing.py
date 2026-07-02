@@ -22,16 +22,18 @@ plt.rcParams.update({
 
 fig, (ax_a, ax_b) = plt.subplots(1, 2, figsize=(13, 5))
 
-# === Panel (a): basis-state energy shifts under H_J = J(s+^1 s-^2 + h.c.) ===
-# J/2pi = 6.5 MHz -> shift = 6.5e-3 GHz on |01>, |10> by sign (cavity-mediated
-# exchange induces +/-J splitting in the {|01>,|10>} subspace; |00>, |11> get
-# no first-order shift from H_J but we mark +J in figure for visual symmetry,
-# following the convention of the original figure).
-J_MHz = 6.5
+# === Panel (a): eigenstate energy shifts under H_J = J(s+^1 s-^2 + h.c.) ===
+# At qubit-qubit degeneracy the single-excitation manifold hybridises into
+# (|01> +/- |10>)/sqrt(2), split by +/-|J|; |00> and |11> are unshifted at
+# this order. Canonical baseline value |J|/2pi = 7.0 MHz (canonical_params).
+J_MHz = 7.0
 J_GHz = J_MHz * 1e-3
 
-states = [r'$|00\rangle$', r'$|01\rangle$', r'$|10\rangle$', r'$|11\rangle$']
-shifts = [+J_GHz, -J_GHz, -J_GHz, +J_GHz]
+states = [r'$|00\rangle$',
+          r'$\frac{|01\rangle+|10\rangle}{\sqrt{2}}$',
+          r'$\frac{|01\rangle-|10\rangle}{\sqrt{2}}$',
+          r'$|11\rangle$']
+shifts = [0.0, +J_GHz, -J_GHz, 0.0]
 colors = ['#1F77B4', '#2CA02C', '#D62728', '#9467BD']
 
 # Background shading for +/- regions
@@ -40,17 +42,17 @@ ax_a.axhspan(-0.02, 0, facecolor='#FBE9E7', alpha=0.6, zorder=0)
 
 bars = ax_a.bar(range(4), shifts, color=colors, edgecolor='black', linewidth=0.8, width=0.6)
 for i, (rect, sh) in enumerate(zip(bars, shifts)):
-    txt_y = sh + (0.001 if sh > 0 else -0.001)
-    ax_a.text(rect.get_x() + rect.get_width()/2, txt_y,
-              f'{J_MHz} MHz',
-              ha='center', va='bottom' if sh > 0 else 'top',
+    lbl = '0' if sh == 0 else (f'+{J_MHz} MHz' if sh > 0 else f'\u2212{J_MHz} MHz')
+    txt_y = sh + (0.001 if sh >= 0 else -0.001)
+    ax_a.text(rect.get_x() + rect.get_width()/2, txt_y, lbl,
+              ha='center', va='bottom' if sh >= 0 else 'top',
               fontsize=10, fontweight='bold')
 
 ax_a.set_xticks(range(4))
 ax_a.set_xticklabels(states, fontsize=12)
-ax_a.set_xlabel('Two-qubit basis state')
-ax_a.set_ylabel(r'Energy shift $\pm J$ [GHz]')
-ax_a.set_title(r'(a) Cavity-mediated transverse exchange $J/2\pi = 6.5$ MHz',
+ax_a.set_xlabel('Two-qubit eigenstate (qubit\u2013qubit degeneracy)')
+ax_a.set_ylabel(r'Energy shift $\pm|J|$ [GHz]')
+ax_a.set_title(r'(a) Cavity-mediated transverse exchange $|J|/2\pi = 7.0$ MHz',
                fontsize=12, fontweight='bold')
 ax_a.set_ylim(-0.018, 0.018)
 ax_a.axhline(0, color='black', linewidth=0.6)

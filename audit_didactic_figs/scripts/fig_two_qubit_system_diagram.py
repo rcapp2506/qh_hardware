@@ -33,7 +33,7 @@ ax.text(cavity_x, cavity_y - 1.20,
         r'$\omega_r/2\pi = 6.5\,$GHz',
         ha='center', va='center', fontsize=10.5, color='#1F3F6B')
 ax.text(cavity_x, cavity_y - 1.55,
-        r'$\kappa/2\pi = 1.0\,$kHz, $Q = 6500$',
+        r'$\kappa/2\pi = 1.0\,$MHz, $Q = 6500$',
         ha='center', va='center', fontsize=10, color='#1F3F6B')
 
 # Q1
@@ -95,12 +95,12 @@ arc = FancyArrowPatch(posA=(q1_x, q1_y + 0.75), posB=(q2_x, q2_y + 0.75),
 ax.add_patch(arc)
 ax.text(cavity_x, 4.75, 'effective transverse exchange',
         ha='center', va='center', fontsize=10.5, style='italic', color='#5E1F9E')
-ax.text(cavity_x, 4.40, r'$J/2\pi \simeq 6.5\,$MHz',
+ax.text(cavity_x, 4.40, r'$|J|/2\pi \simeq 7.0\,$MHz',
         ha='center', va='center', fontsize=11, color='#5E1F9E')
 
 # Cross-Kerr label
 ax.text(cavity_x, 4.10,
-        r'(residual cross-Kerr $|\zeta_{zz}|/2\pi \simeq 1.7\,$MHz)',
+        r'(residual cross-Kerr $|\xi_{ZZ}|/2\pi \simeq 106\,$kHz)',
         ha='center', va='center', fontsize=9, style='italic', color='#5E1F9E')
 
 # Readout port
