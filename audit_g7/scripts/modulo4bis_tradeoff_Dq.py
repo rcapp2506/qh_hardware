@@ -25,9 +25,9 @@ import matplotlib.pyplot as plt
 omega_r = 6.5    # GHz
 g = 0.080        # 80 MHz
 alpha = -0.200   # -200 MHz
-T1 = 50          # μs
-T2 = 30          # μs
-Omega_drive = 0.080  # 80 MHz (limite "safe" = α/2.5, regola Sheldon 2016)
+T1 = 100         # us (baseline mK, Tab 2.22)
+T2 = 100         # us (baseline mK, Tab 2.22)
+Omega_drive_adopted = 0.060  # 60 MHz adopted drive (below min(|alpha|/3, Dq/3))
 
 # Centro le frequenze attorno a ω̄ = 5.5 GHz (intermediate)
 omega_bar = 5.5
@@ -36,10 +36,10 @@ print("="*78)
 print("TRADE-OFF Δ_q: scan da 100 MHz a 1500 MHz")
 print("="*78)
 print(f"Parametri fissi: g = {g*1e3:.0f} MHz, α = {alpha*1e3:.0f} MHz, ω_r = {omega_r} GHz")
-print(f"Centro frequenze qubit: ω̄ = {omega_bar} GHz, Ω_drive = {Omega_drive*1e3:.0f} MHz")
+print(f"Centro frequenze qubit: omega_bar = {omega_bar} GHz, Omega_drive = {Omega_drive_adopted*1e3:.0f} MHz (throttled below Dq/3)")
 print()
 
-Delta_q_arr = np.linspace(0.100, 1.500, 30)  # GHz
+Delta_q_arr = np.sort(np.append(np.linspace(0.100, 1.500, 30), 0.600))  # GHz, exact canonical point included
 
 results = []
 for Dq in Delta_q_arr:
@@ -58,12 +58,13 @@ for Dq in Delta_q_arr:
     chi_1 = (g**2 / D1) * (alpha / (D1 + alpha))
     chi_2 = (g**2 / D2) * (alpha / (D2 + alpha))
     
-    # 4. Ω_ZX rate del CR (Sheldon 2016)
+    # 4. Omega_ZX CR rate (Sheldon 2016); drive throttled at small Dq
+    Omega_drive = min(Omega_drive_adopted, Dq / 3.0)
     Omega_ZX = -J * Omega_drive * alpha / (Dq * (Dq + alpha))
     
-    # 5. t_CR = π/(4|Ω_ZX|) in μs (zeta in GHz → 1/GHz = ns; *1e3 → μs)
+    # 5. t_CR = 1/(4|Omega_ZX|) [ZX(pi/2), canonical convention: 1.8 MHz -> 138.9 ns]
     if abs(Omega_ZX) > 1e-9:
-        t_CR_us = np.pi / (4 * abs(Omega_ZX) * 1e3)  # GHz → ns conversion
+        t_CR_us = 1.0 / (4 * abs(Omega_ZX) * 1e3)  # GHz -> us
     else:
         t_CR_us = float('inf')
     
@@ -148,13 +149,16 @@ ax.axhline(200, color='green', linestyle='--', alpha=0.6, label='target $<$ 200 
 ax.axhline(500, color='orange', linestyle=':', alpha=0.6, label='marginal: 500 ns')
 ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$t_{CR}$ (ns)')
 ax.set_title('A. Gate time vs qubit-qubit detuning')
-ax.grid(True, alpha=0.3); ax.legend(fontsize=9); ax.set_ylim(50, 1e5)
+canon = min(results, key=lambda r: abs(r['Dq_MHz']-600))
+ax.scatter([canon['Dq_MHz']],[canon['t_CR_ns']], s=120, c='red', zorder=5, label=r'canonical $\Delta_q=600$ MHz')
+ax.grid(True, alpha=0.3); ax.legend(fontsize=9); ax.set_ylim(20, 1e5)
 
 # Panel B: cross-Kerr statico parassita
 ax = axes[0, 1]
 ax.semilogy(Dqs, [abs(r['zeta_zz_kHz']) for r in results], 'r-', linewidth=2)
 ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$|\zeta_{zz}|$ (kHz)')
 ax.set_title('B. Static parasitic cross-Kerr\n(smaller is better)')
+ax.scatter([canon['Dq_MHz']],[abs(canon['zeta_zz_kHz'])], s=120, c='red', zorder=5)
 ax.grid(True, alpha=0.3)
 
 # Panel C: spectral selectivity & crosstalk
@@ -174,12 +178,14 @@ ax = axes[1, 1]
 ax.plot(Dqs, [r['F_CR']*100 for r in results], 'b-', linewidth=2, label=r'$F_{CR}$ ($T_1/T_2$ limit)')
 ax.axhline(99, color='gray', linestyle='--', alpha=0.6, label='99% threshold')
 ax.axhline(99.9, color='gray', linestyle=':', alpha=0.6, label='99.9% threshold')
+ax.scatter([canon['Dq_MHz']], [canon['F_CR']*100], s=120, c='red', zorder=5,
+           label=f'canonical 600 MHz (F={canon["F_CR"]*100:.1f}%)')
 if best:
-    ax.scatter([best['Dq_MHz']], [best['F_CR']*100], s=120, c='red', zorder=5,
-               label=f'Δ_q* = {best["Dq_MHz"]:.0f} MHz')
+    ax.scatter([best['Dq_MHz']], [best['F_CR']*100], s=70, c='gray', zorder=5,
+               label=f'speed-optimal (unconstr.) {best["Dq_MHz"]:.0f} MHz')
 ax.set_xlabel(r'$\Delta_q$ (MHz)'); ax.set_ylabel(r'$F_{CR}$ (%)')
 ax.set_title('D. Expected fidelity')
-ax.set_ylim(95, 100); ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
+ax.set_ylim(97, 100); ax.legend(fontsize=8); ax.grid(True, alpha=0.3)
 
 plt.suptitle(r'Trade-off of $\Delta_q$ for the baseline configuration ($g=80$ MHz, $\alpha=-200$ MHz)',
              fontsize=12, y=1.00)
@@ -187,3 +193,5 @@ plt.tight_layout()
 plt.savefig('./qubit_detuning_tradeoff_baseline.pdf', bbox_inches='tight')
 plt.savefig('./qubit_detuning_tradeoff_baseline.png', dpi=160, bbox_inches='tight')
 print('\nFigure saved: qubit_detuning_tradeoff_baseline.{pdf,png}')
+print(f"\nCANONICAL ROW (Dq=600): J={canon['J_MHz']:.2f} MHz, OmegaZX={abs(canon['Omega_ZX_MHz']):.3f} MHz, "
+      f"t_CR={canon['t_CR_ns']:.0f} ns, zeta_zz={canon['zeta_zz_kHz']:.0f} kHz (pert.), F_dec={canon['F_CR']*100:.2f}%")

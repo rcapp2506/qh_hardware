@@ -61,7 +61,7 @@ ax_a.grid(axis='y', alpha=0.3, linestyle=':')
 
 # === Panel (b): Gate timing comparison — linear y-axis 0-350 ns ===
 operations = ['Single qubit', 'Hadamard', 'CNOT (echo-CR)', 'Readout']
-times_ns = [20, 20, 250, 300]
+times_ns = [20, 20, 750, 300]
 bar_colors = ['#3CB371', '#3CB371', '#FF8C00', '#1F77B4']
 
 bars_b = ax_b.bar(range(4), times_ns, color=bar_colors, edgecolor='black', linewidth=0.8, width=0.6)
