@@ -175,14 +175,14 @@ print(f"{'─'*78}")
 
 # ─── Plot ───
 fig, ax = plt.subplots(figsize=(10, 5.5))
-ax.plot(times, F_simple*100, 'r-o', linewidth=2, markersize=6, label='CR semplice')
+ax.plot(times, F_simple*100, 'r-o', linewidth=2, markersize=6, label='Bare CR')
 ax.plot(times, F_echo*100,   'b-s', linewidth=2, markersize=6, label='Echo CR (Sheldon 2016)')
 ax.axvline(t_pred, color='gray', linestyle='--', alpha=0.6, label=f"t_pred Sheldon = {t_pred:.0f} ns")
 ax.axhline(99, color='green', linestyle=':', alpha=0.5, label='F = 99% (surface code)')
 ax.axhline(99.9, color='darkgreen', linestyle=':', alpha=0.4)
 ax.set_xlabel('t_gate (ns)', fontsize=12)
 ax.set_ylabel('F_avg (%)', fontsize=12)
-ax.set_title('Sistema B (innovation 300 GHz @ 4K): Echo CR salva la fidelity\n'
+ax.set_title('Elevated-temperature design (300 GHz @ 4 K): echo CR rescues the gate fidelity\n'
              '(Δ_q=600 MHz, T_1=25 μs, T_2=12 μs, n̄_th=0.028)',
              fontsize=11)
 ax.set_ylim(40, 102)
