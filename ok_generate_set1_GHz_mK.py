@@ -109,8 +109,7 @@ for i, (bar1, bar2) in enumerate(zip(bars1, bars2)):
     ax2.text(bar2.get_x() + bar2.get_width()/2., height2,
             f'{energy_ratios[i]:.2f}', ha='center', va='bottom', fontsize=9)
 
-ax2.axhline(y=0.2, color='red', linestyle='--', linewidth=2, alpha=0.7, label='2% threshold')
-#ax2.text(len(labels)-0.5, 2.2, '2% threshold', color='red', fontsize=10, fontweight='bold')
+ax2.axhline(y=2.0, color='red', linestyle='--', linewidth=2, alpha=0.7, label='2% threshold')
 
 ax2.set_xlabel('Configuration', fontsize=13, fontweight='bold')
 ax2.set_ylabel('Values', fontsize=13, fontweight='bold')
@@ -120,7 +119,7 @@ ax2.set_xticks(x_pos)
 ax2.set_xticklabels(labels, fontsize=10)
 ax2.legend(loc='upper right', fontsize=10)
 ax2.grid(True, alpha=0.3, axis='y')
-ax2.set_ylim(0, max(max(thermal_pops), max(energy_ratios)) * 1.2)
+ax2.set_ylim(0, 2.3)
 
 plt.tight_layout()
 plt.savefig('./SET1_operating_regime_GHz_mK.png', dpi=300, bbox_inches='tight')
@@ -291,13 +290,17 @@ ax5.axis('off')
  #   ['Design\nat 20 mK', '2.0', '20', '0.83', '47.9', '✓ Good'],
 #]
 
+# Values recomputed from n = 1/(exp(hf/kT)-1), ratio = hf/(kT):
+# 5 GHz @ 20 mK: ratio 12.0, n = 6.1e-4 %; 2 GHz: 10 mK -> (9.6, 0.0068%),
+# 15 mK -> (6.4, 0.17%), 18 mK -> (5.3, 0.49%), 20 mK -> (4.8, 0.83%).
+# (Previous hardcoded ratios were off by x10 / x1000.)
 table_data = [
     ['Configuration', 'ω₀₁\n(GHz)', 'T\n(mK)', 'n(T)\n(%)', 'ħω/(k_BT)', 'Status'],
-    ['Traditional\nAl transmon', '5.0', '20', '0.0001', '11998.5', '✓ Excellent'],
-    ['Design\nat 10 mK', '2.0', '10', '0.03', '95.9', '✓ Good'],
-    ['Design\nat 15 mK', '2.0', '15', '0.17', '63.9', '✓ Good'],
-    ['Design\nat 18 mK', '2.0', '18', '0.49', '53.3', '✓ Good'],
-    ['Design\nat 20 mK', '2.0', '20', '0.83', '47.9', '✓ Good'],
+    ['Traditional\nAl transmon', '5.0', '20', '0.0006', '12.0', '✓ Excellent'],
+    ['Design\nat 10 mK', '2.0', '10', '0.0068', '9.6', '✓ Good'],
+    ['Design\nat 15 mK', '2.0', '15', '0.17', '6.4', '✓ Good'],
+    ['Design\nat 18 mK', '2.0', '18', '0.49', '5.3', '✓ Good'],
+    ['Design\nat 20 mK', '2.0', '20', '0.83', '4.8', '✓ Good'],
 ]
 
 
