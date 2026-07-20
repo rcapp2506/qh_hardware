@@ -127,7 +127,7 @@ ax_c.annotate(rf"design point: 300 GHz, $\varepsilon={eps_300*100:.2f}\%$",
               arrowprops=dict(arrowstyle="->", color=C300))
 ax_c.set_xlabel("Frequency (GHz)"); ax_c.set_ylabel(r"gate error $\varepsilon$ (%)")
 ax_c.set_title(r"(c) Fidelity trade-off: $\varepsilon(f)=t_{\rm CNOT}\Gamma_{\rm diel}+\bar n_{\rm th}/2$")
-ax_c.set_xlim(0, 1200); ax_c.set_ylim(0.2, 300)
+ax_c.set_xlim(0, 1200); ax_c.set_ylim(0.2, 100)
 ax_c.legend(fontsize=9, loc="upper right"); ax_c.grid(alpha=0.3)
 
 # (d) sensitivity to the tan-delta uncertainty (G9 factor-3 band)
@@ -143,7 +143,7 @@ ax_d.plot([f_op, f_op], [eps_300 * 100, eps_total(f_op, Q=Q_lo) * 100],
           label="300 GHz design point (band)")
 ax_d.set_xlabel("Frequency (GHz)"); ax_d.set_ylabel(r"gate error $\varepsilon$ (%)")
 ax_d.set_title(r"(d) Sensitivity to the sub-THz $\tan\delta$ extrapolation (factor 3)")
-ax_d.set_xlim(0, 1200); ax_d.set_ylim(0.2, 300)
+ax_d.set_xlim(0, 1200); ax_d.set_ylim(0.2, 100)
 ax_d.legend(fontsize=9, loc="upper right"); ax_d.grid(alpha=0.3)
 
 fig.tight_layout()

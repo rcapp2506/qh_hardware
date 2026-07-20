@@ -99,7 +99,7 @@ colors_b = ['#D85959', '#E59A40', '#5BAA66', '#3A6B43']
 
 # Green shaded region above 30 us (log scale: values span 3 decades)
 ax_b.set_yscale('log')
-ax_b.axhspan(30, 1500, color='#D6EBDD', alpha=0.5, zorder=0)
+ax_b.axhspan(30, 5000, color='#D6EBDD', alpha=0.5, zorder=0)
 
 bars = ax_b.bar(range(4), t1_us, color=colors_b, edgecolor='black',
                 linewidth=1.4, width=0.65)
@@ -118,7 +118,7 @@ ax_b.set_xticks(range(4))
 ax_b.set_xticklabels(substrates)
 ax_b.set_ylabel(r'Projected $T_1$ ($\mu$s)')
 ax_b.set_title('(b) Substrate comparison at 300 GHz', fontweight='bold')
-ax_b.set_ylim(0.2, 1500)
+ax_b.set_ylim(0.2, 5000)
 ax_b.legend(loc='upper left', fontsize=10, framealpha=0.95)
 ax_b.grid(axis='y', alpha=0.3, linestyle=':', which='both')
 
