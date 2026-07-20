@@ -1,6 +1,8 @@
 """
 Regenerate Fig 2.8 (zz_coupling_timing) with a clearer y-axis on
-panel (b): linear scale 0-350 ns instead of log scale 10-500.
+panel (b): linear scale 0-850 ns (the canonical echo-CR CNOT is 750 ns
+after decision 3, Dq=600 MHz; the previous 0-350 ns range clipped the
+CNOT bar and pushed its label outside the axes).
 This preserves panel (a) unchanged.
 
 The original script for this figure was not pushed to qh_hardware, so
@@ -66,7 +68,7 @@ bar_colors = ['#3CB371', '#3CB371', '#FF8C00', '#1F77B4']
 
 bars_b = ax_b.bar(range(4), times_ns, color=bar_colors, edgecolor='black', linewidth=0.8, width=0.6)
 for rect, t in zip(bars_b, times_ns):
-    ax_b.text(rect.get_x() + rect.get_width()/2, t + 6,
+    ax_b.text(rect.get_x() + rect.get_width()/2, t + 14,
               f'{t} ns',
               ha='center', va='bottom', fontsize=10, fontweight='bold')
 
@@ -79,7 +81,7 @@ ax_b.set_xticklabels(operations, fontsize=10)
 ax_b.set_xlabel('Operation')
 ax_b.set_ylabel('Gate time [ns]')
 ax_b.set_title('(b) Gate timing comparison', fontsize=12, fontweight='bold')
-ax_b.set_ylim(0, 350)
+ax_b.set_ylim(0, 850)
 ax_b.grid(axis='y', alpha=0.3, linestyle=':')
 ax_b.legend(loc='upper left', framealpha=0.9, fontsize=9)
 
