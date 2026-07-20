@@ -84,16 +84,22 @@ ax_a.grid(axis='y', alpha=0.3, linestyle=':')
 # ============================================================
 ax_b = fig.add_subplot(gs[1, 0])
 
+# Values anchored to tab:substrate_t1_diel (canonical, p = 0.1):
+# T1_diel = 1/(omega * p * tan_delta) at 300 GHz -> 0.53 / 106 / 53 / 531 us.
+# (Previous hardcoded values 10/200/100/500 were ~2x off and used the
+# wrong tan_delta for standard Si.)
 substrates = ['Standard\nSi', 'High-$\\rho$\nSi', 'Sapphire', 'Target']
-t1_us = [10, 200, 100, 500]
-tan_delta_text = [r'$\tan\delta = 10^{-6}$',
+t1_us = [0.53, 106, 53, 531]
+t1_lbl = ['0.53', '106', '53', '531']
+tan_delta_text = [r'$\tan\delta = 10^{-5}$',
                   r'$\tan\delta = 5\!\times\!10^{-8}$',
                   r'$\tan\delta = 10^{-7}$',
                   r'$\tan\delta = 10^{-8}$']
 colors_b = ['#D85959', '#E59A40', '#5BAA66', '#3A6B43']
 
-# Green shaded region above 30 us
-ax_b.axhspan(30, 600, color='#D6EBDD', alpha=0.5, zorder=0)
+# Green shaded region above 30 us (log scale: values span 3 decades)
+ax_b.set_yscale('log')
+ax_b.axhspan(30, 1500, color='#D6EBDD', alpha=0.5, zorder=0)
 
 bars = ax_b.bar(range(4), t1_us, color=colors_b, edgecolor='black',
                 linewidth=1.4, width=0.65)
@@ -103,18 +109,18 @@ ax_b.axhline(30, color='#D85959', linestyle='--', linewidth=1.8,
              label=r'30 $\mu$s minimum')
 
 # Numerical labels above each bar
-for i, (bar, t1, tan_d) in enumerate(zip(bars, t1_us, tan_delta_text)):
-    ax_b.text(bar.get_x() + bar.get_width()/2, t1 + 20,
-              f'{t1} $\\mu$s\n{tan_d}',
+for i, (bar, t1, lbl, tan_d) in enumerate(zip(bars, t1_us, t1_lbl, tan_delta_text)):
+    ax_b.text(bar.get_x() + bar.get_width()/2, t1 * 1.25,
+              f'{lbl} $\\mu$s\n{tan_d}',
               ha='center', va='bottom', fontsize=9, fontweight='bold')
 
 ax_b.set_xticks(range(4))
 ax_b.set_xticklabels(substrates)
 ax_b.set_ylabel(r'Projected $T_1$ ($\mu$s)')
 ax_b.set_title('(b) Substrate comparison at 300 GHz', fontweight='bold')
-ax_b.set_ylim(0, 600)
+ax_b.set_ylim(0.2, 1500)
 ax_b.legend(loc='upper left', fontsize=10, framealpha=0.95)
-ax_b.grid(axis='y', alpha=0.3, linestyle=':')
+ax_b.grid(axis='y', alpha=0.3, linestyle=':', which='both')
 
 
 # ============================================================
