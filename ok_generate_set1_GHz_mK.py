@@ -71,55 +71,71 @@ ax1.legend(loc='upper left', fontsize=10, framealpha=0.9)
 # RIGHT PLOT: Performance Comparison
 ax2 = plt.subplot(1, 2, 2)
 
+# The 2 GHz reference at T_mK has the same hw/kT as the 300 GHz design at
+# T_K = 0.15 * T_mK: the mK validation domain deliberately reproduces the
+# kelvin-domain dimensionless numbers. Labels make the mapping explicit.
 configurations = [
-    ('Traditional\nAl/AlOₓ\n(20 mK)', 5.0, 0.020),
-    ('Design\n@ 10 mK', 2.0, 0.010),
-    ('Design\n@ 15 mK', 2.0, 0.015),
-    ('Design\n@ 18 mK', 2.0, 0.018),
-    ('Design\n@ 20 mK', 2.0, 0.020),
+    ('Traditional\nAl/AlOₓ\n5 GHz @ 20 mK', 5.0, 0.020, None),
+    ('Reference\n2 GHz @ 10 mK\n(≡ 300 GHz @ 1.5 K)', 2.0, 0.010, 1.5),
+    ('Reference\n2 GHz @ 15 mK\n(≡ 300 GHz @ 2.25 K)', 2.0, 0.015, 2.25),
+    ('Reference\n2 GHz @ 18 mK\n(≡ 300 GHz @ 2.7 K)', 2.0, 0.018, 2.7),
+    ('Reference\n2 GHz @ 20 mK\n(≡ 300 GHz @ 3.0 K)', 2.0, 0.020, 3.0),
 ]
 
 thermal_pops = []
 energy_ratios = []
 labels = []
 
-for label, f_GHz, T_K in configurations:
+for label, f_GHz, T_K, _ in configurations:
     f_Hz = f_GHz * 1e9
     beta = (h * f_Hz) / (k_B * T_K)
     n_th = 1.0 / (np.exp(beta) - 1) * 100
-    
+
     thermal_pops.append(n_th)
-    energy_ratios.append(beta / 20)  # Normalize for visualization
+    energy_ratios.append(beta)   # true hw/kT, plotted on twin axis
     labels.append(label)
 
 x_pos = np.arange(len(labels))
-width = 0.35
+width = 0.5
 
-bars1 = ax2.bar(x_pos - width/2, thermal_pops, width, label='Thermal Population (%)', 
-                color='steelblue', alpha=0.8)
-bars2 = ax2.bar(x_pos + width/2, energy_ratios, width, label='Energy Ratio/20', 
-                color='lightblue', alpha=0.8)
+# Thermal population: log-scale bars (values span 4 decades)
+bars1 = ax2.bar(x_pos, thermal_pops, width, label='Thermal population $n_{th}$ (%)',
+                color='steelblue', alpha=0.85, zorder=2)
+ax2.set_yscale('log')
+ax2.set_ylim(1e-4, 30)
+for i, bar1 in enumerate(bars1):
+    ax2.text(bar1.get_x() + bar1.get_width()/2., bar1.get_height()*1.25,
+            f'{thermal_pops[i]:.2g}%', ha='center', va='bottom', fontsize=10,
+            fontweight='bold', color='steelblue')
 
-# Add value labels on bars
-for i, (bar1, bar2) in enumerate(zip(bars1, bars2)):
-    height1 = bar1.get_height()
-    height2 = bar2.get_height()
-    ax2.text(bar1.get_x() + bar1.get_width()/2., height1,
-            f'{thermal_pops[i]:.2g}%', ha='center', va='bottom', fontsize=9)
-    ax2.text(bar2.get_x() + bar2.get_width()/2., height2,
-            f'{energy_ratios[i]:.2f}', ha='center', va='bottom', fontsize=9)
+ax2.axhline(y=2.0, color='red', linestyle='--', linewidth=2, alpha=0.7,
+            label='2% threshold')
 
-ax2.axhline(y=2.0, color='red', linestyle='--', linewidth=2, alpha=0.7, label='2% threshold')
+# Energy ratio hw/kT: markers on right axis (true values, no rescaling)
+ax2b = ax2.twinx()
+ax2b.plot(x_pos, energy_ratios, 'D', color='darkorange', markersize=10,
+          markeredgecolor='black', label='$\\hbar\\omega_{01}/(k_B T)$', zorder=3)
+for i, r in enumerate(energy_ratios):
+    ax2b.text(x_pos[i], r + 0.6, f'{r:.1f}', ha='center', fontsize=10,
+              fontweight='bold', color='darkorange')
+ax2b.set_ylim(0, 15)
+ax2b.set_ylabel('Energy ratio $\\hbar\\omega_{01}/(k_B T)$', fontsize=13,
+                fontweight='bold', color='darkorange')
+ax2b.tick_params(axis='y', labelcolor='darkorange')
 
 ax2.set_xlabel('Configuration', fontsize=13, fontweight='bold')
-ax2.set_ylabel('Values', fontsize=13, fontweight='bold')
-ax2.set_title('Performance Comparison:\nTraditional vs elevated-T design (mK domain)', 
+ax2.set_ylabel('Thermal population $n_{th}$ (%)', fontsize=13, fontweight='bold',
+               color='steelblue')
+ax2.tick_params(axis='y', labelcolor='steelblue')
+ax2.set_title('Traditional transmon vs 2 GHz reference:\n'
+              'each mK point reproduces the 300 GHz design at kelvin temperatures',
               fontsize=15, fontweight='bold')
 ax2.set_xticks(x_pos)
-ax2.set_xticklabels(labels, fontsize=10)
-ax2.legend(loc='upper right', fontsize=10)
-ax2.grid(True, alpha=0.3, axis='y')
-ax2.set_ylim(0, 2.3)
+ax2.set_xticklabels(labels, fontsize=9)
+h1, l1 = ax2.get_legend_handles_labels()
+h2, l2 = ax2b.get_legend_handles_labels()
+ax2.legend(h1 + h2, l1 + l2, loc='upper right', fontsize=10, framealpha=0.9)
+ax2.grid(True, alpha=0.3, axis='y', which='both')
 
 plt.tight_layout()
 plt.savefig('./SET1_operating_regime_GHz_mK.png', dpi=300, bbox_inches='tight')
